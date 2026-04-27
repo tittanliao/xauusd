@@ -65,7 +65,7 @@ xauusd/
 ├── main.py                 # Fail-pattern 分析入口
 ├── run_experiments.py      # 多單 20 策略實驗入口
 ├── run_short_experiments.py # 空單 20 策略實驗入口
-├── final_report.html       # 整合報告（多空 + DXY + Next Action）
+├── index.html              # 整合報告（多空 + DXY + Next Action）
 │
 ├── XAUUSD-Long-S1-AweWithBB/    # S1 策略：交易 CSV + report.html + Pine script
 ├── XAUUSD-Long-S2-Hybrid/       # S2 策略
@@ -184,7 +184,7 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 - **`XAUUSD-Long-Experiments/pine/*.pine`** — 20 個多單 Pine Script v6
 - **`XAUUSD-Short-Experiments/report.html`** — 空單 20 策略排名儀表板
 - **`XAUUSD-Short-Experiments/pine/*.pine`** — 20 個空單 Pine Script v6
-- **`final_report.html`** — 根目錄整合報告（多空 + DXY + Next Action，含各子報告連結）
+- **`index.html`** — 根目錄整合報告（多空 + DXY + Next Action，含各子報告連結）
 
 ---
 
