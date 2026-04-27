@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XAUUSD Strategy — Final Report</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --orange: #f97316;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; padding: 24px; }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--cyan); }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .kpi .value { font-size: 20px; font-weight: 700; }
+  .kpi .value.green { color: var(--green); }
+  .kpi .value.red { color: var(--red); }
+  .kpi .value.yellow { color: var(--yellow); }
+  .kpi .value.blue { color: var(--blue); }
+  .kpi .value.muted { color: var(--muted); }
+  .strategy-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .strategy-card .name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .strategy-card .version { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+  td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge.yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .badge.blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .badge.cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .badge.orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .fail-bar { display: flex; height: 20px; border-radius: 6px; overflow: hidden; margin: 6px 0; }
+  .fail-bar div { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .todo-list { list-style: none; }
+  .todo-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .todo-list li:last-child { border-bottom: none; }
+  .todo-num { background: var(--blue); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .todo-num.urgent { background: var(--red); }
+  .todo-num.medium { background: var(--yellow); color: #000; }
+  .todo-num.low { background: var(--muted); }
+  .todo-content .title { font-weight: 600; margin-bottom: 3px; }
+  .todo-content .desc { color: var(--muted); font-size: 12px; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 500; margin-right: 4px; }
+  .tag.data { background: rgba(6,182,212,0.1); color: var(--cyan); }
+  .tag.strategy { background: rgba(168,85,247,0.1); color: var(--purple); }
+  .tag.validate { background: rgba(34,197,94,0.1); color: var(--green); }
+  .tag.optimize { background: rgba(245,158,11,0.1); color: var(--yellow); }
+  .score-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 4px; }
+  .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+  .insight-box { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; padding: 14px 16px; margin-top: 14px; }
+  .insight-box.warn { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+  .insight-box.success { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.2); }
+  .insight-box .head { font-weight: 600; font-size: 12px; color: var(--blue); margin-bottom: 6px; }
+  .insight-box.warn .head { color: var(--yellow); }
+  .insight-box.success .head { color: var(--green); }
+  .comparison-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .comparison-row .label { width: 160px; color: var(--muted); font-size: 12px; flex-shrink: 0; }
+  .comparison-row .bars { flex: 1; display: flex; gap: 4px; }
+  .comparison-row .bar-wrap { flex: 1; }
+  .comparison-row .bar-val { font-size: 11px; text-align: center; margin-top: 2px; color: var(--muted); }
+  .mini-bar { height: 16px; border-radius: 4px; }
+  .rank-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .rank-1 { background: rgba(245,158,11,0.2); color: var(--yellow); }
+  .rank-2 { background: rgba(148,163,184,0.15); color: #94a3b8; }
+  .rank-3 { background: rgba(180,120,60,0.15); color: #b4783c; }
+  .rank-n { background: rgba(100,100,100,0.1); color: var(--muted); }
+</style>
+</head>
+<body>
+
+<h1>XAUUSD Long-Only — Final Strategy Report</h1>
+<div class="subtitle">生成日期：2026-04-27 &nbsp;|&nbsp; 3 個既有策略 + 20 個實驗策略 &nbsp;|&nbsp; 數據截至 2026-04-26</div>
+
+<!-- ===== SECTION 1: 三策略總覽 ===== -->
+<div class="section">
+  <h2>1. 三策略核心指標對比</h2>
+  <div class="grid-3">
+
+    <div class="strategy-card">
+      <div class="name">S1 · AweWithBB</div>
+      <div class="version">V3.4 &nbsp;|&nbsp; Awesome Oscillator + Bollinger Bands</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">交易筆數</div><div class="value blue">504</div></div>
+        <div class="kpi"><div class="label">勝率</div><div class="value green">53.2%</div></div>
+        <div class="kpi"><div class="label">獲利因子</div><div class="value yellow">1.525</div></div>
+        <div class="kpi"><div class="label">淨盈虧 USD</div><div class="value green">+6,137</div></div>
+        <div class="kpi"><div class="label">最大回撤</div><div class="value red">-494</div></div>
+        <div class="kpi"><div class="label">平均持倉</div><div class="value muted">29 bars</div></div>
+        <div class="kpi"><div class="label">最大連虧</div><div class="value red">8 筆</div></div>
+        <div class="kpi"><div class="label">均勝 / 均虧</div><div class="value muted">+67/-50</div></div>
+      </div>
+      <h3>失敗模式分佈</h3>
+      <div class="fail-bar">
+        <div style="width:48.3%;background:#4b5563;">normal_sl 48%</div>
+        <div style="width:30.9%;background:#ef4444;">imm 31%</div>
+        <div style="width:20.8%;background:#f59e0b;color:#000;">tbleed 21%</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">normal_sl 114 &nbsp;|&nbsp; immediate_loss 73 &nbsp;|&nbsp; time_bleed 49</div>
+      <div class="insight-box warn" style="margin-top:12px;">
+        <div class="head">⚠ 診斷：immediate_loss 佔 31%</div>
+        進場方向偏差是主要問題——30.9% 的虧損交易 MFE 不到 0.1%，代表進場後價格幾乎立即反向。需要審視進場濾網條件。
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <div class="name">S2 · Hybrid</div>
+      <div class="version">V2.0 &nbsp;|&nbsp; 複合訊號</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">交易筆數</div><div class="value blue">161</div></div>
+        <div class="kpi"><div class="label">勝率</div><div class="value yellow">42.2%</div></div>
+        <div class="kpi"><div class="label">獲利因子</div><div class="value green">1.679</div></div>
+        <div class="kpi"><div class="label">淨盈虧 USD</div><div class="value green">+6,212</div></div>
+        <div class="kpi"><div class="label">最大回撤</div><div class="value red">-1,177</div></div>
+        <div class="kpi"><div class="label">平均持倉</div><div class="value muted">140 bars</div></div>
+        <div class="kpi"><div class="label">最大連虧</div><div class="value yellow">5 筆</div></div>
+        <div class="kpi"><div class="label">均勝 / 均虧</div><div class="value muted">+226/-98</div></div>
+      </div>
+      <h3>失敗模式分佈</h3>
+      <div class="fail-bar">
+        <div style="width:51.6%;background:#f59e0b;color:#000;">time_bleed 52%</div>
+        <div style="width:40.9%;background:#4b5563;">normal_sl 41%</div>
+        <div style="width:7.5%;background:#ef4444;">i</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">time_bleed 48 &nbsp;|&nbsp; normal_sl 38 &nbsp;|&nbsp; immediate_loss 7</div>
+      <div class="insight-box warn" style="margin-top:12px;">
+        <div class="head">⚠ 診斷：time_bleed 佔 52%</div>
+        超過一半的虧損都是「拖太久才停損」。平均持倉高達 140 bars（70 小時），加入最大持倉時間上限（建議 48 bars）可大幅改善。
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <div class="name">S2 · Pullback</div>
+      <div class="version">V1.9 &nbsp;|&nbsp; 回調進場</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">交易筆數</div><div class="value blue">200</div></div>
+        <div class="kpi"><div class="label">勝率</div><div class="value yellow">44.0%</div></div>
+        <div class="kpi"><div class="label">獲利因子</div><div class="value green">1.681</div></div>
+        <div class="kpi"><div class="label">淨盈虧 USD</div><div class="value green">+7,722</div></div>
+        <div class="kpi"><div class="label">最大回撤</div><div class="value red">-1,431</div></div>
+        <div class="kpi"><div class="label">平均持倉</div><div class="value muted">135 bars</div></div>
+        <div class="kpi"><div class="label">最大連虧</div><div class="value red">9 筆</div></div>
+        <div class="kpi"><div class="label">均勝 / 均虧</div><div class="value muted">+217/-101</div></div>
+      </div>
+      <h3>失敗模式分佈</h3>
+      <div class="fail-bar">
+        <div style="width:53.6%;background:#f59e0b;color:#000;">time_bleed 54%</div>
+        <div style="width:33.0%;background:#4b5563;">normal_sl 33%</div>
+        <div style="width:13.4%;background:#ef4444;">imm 13%</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">time_bleed 60 &nbsp;|&nbsp; normal_sl 37 &nbsp;|&nbsp; immediate_loss 15</div>
+      <div class="insight-box warn" style="margin-top:12px;">
+        <div class="head">⚠ 診斷：time_bleed 佔 54%，回撤最大</div>
+        S2-Pullback 是三者中淨盈虧最高但回撤也最大的策略。time_bleed 問題與 Hybrid 相同，且最大連虧達 9 筆，資金管理壓力大。
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SECTION 2: 時段分析 ===== -->
+<div class="section">
+  <h2>2. 交易時段勝率分析（UTC+8）</h2>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">亞盤 07:00–15:59 &nbsp;|&nbsp; 歐盤 16:00–21:59 &nbsp;|&nbsp; 美盤 22:00–06:59</p>
+  <table>
+    <thead>
+      <tr>
+        <th>策略</th>
+        <th>美盤 勝率</th>
+        <th>美盤 筆數</th>
+        <th>歐盤 勝率</th>
+        <th>歐盤 筆數</th>
+        <th>亞盤 勝率</th>
+        <th>亞盤 筆數</th>
+        <th>建議</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>S1 AweWithBB</strong></td>
+        <td><span class="badge green">53.2%</span></td><td style="color:var(--muted)">139</td>
+        <td><span class="badge yellow">52.8%</span></td><td style="color:var(--muted)">127</td>
+        <td><span class="badge green">53.4%</span></td><td style="color:var(--muted)">238</td>
+        <td style="color:var(--muted);font-size:12px;">三時段均勻，無需時段過濾</td>
+      </tr>
+      <tr>
+        <td><strong>S2 Hybrid</strong></td>
+        <td><span class="badge green">45.0%</span></td><td style="color:var(--muted)">80</td>
+        <td><span class="badge red">34.4%</span></td><td style="color:var(--muted)">32</td>
+        <td><span class="badge yellow">42.9%</span></td><td style="color:var(--muted)">49</td>
+        <td style="color:var(--yellow);font-size:12px;">停用歐盤 (+10.6% 勝率差距)</td>
+      </tr>
+      <tr>
+        <td><strong>S2 Pullback</strong></td>
+        <td><span class="badge green">49.3%</span></td><td style="color:var(--muted)">73</td>
+        <td><span class="badge yellow">43.5%</span></td><td style="color:var(--muted)">46</td>
+        <td><span class="badge red">39.5%</span></td><td style="color:var(--muted)">81</td>
+        <td style="color:var(--yellow);font-size:12px;">停用亞盤 (+9.8% 勝率差距)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 3: 跨策略比較 ===== -->
+<div class="section">
+  <h2>3. 策略綜合比較</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>策略</th>
+        <th>交易筆數</th>
+        <th>勝率</th>
+        <th>獲利因子</th>
+        <th>淨盈虧</th>
+        <th>最大回撤</th>
+        <th>回撤/盈虧比</th>
+        <th>均勝</th>
+        <th>均虧</th>
+        <th>盈虧比</th>
+        <th>主要問題</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>S1 AweWithBB V3.4</strong></td>
+        <td>504</td>
+        <td><span class="badge green">53.2%</span></td>
+        <td>1.525</td>
+        <td style="color:var(--green)">+$6,137</td>
+        <td style="color:var(--green)">-$494</td>
+        <td style="color:var(--green)">8.1%</td>
+        <td>+$67</td>
+        <td>-$50</td>
+        <td>1.34</td>
+        <td><span class="badge red">immediate_loss 31%</span></td>
+      </tr>
+      <tr>
+        <td><strong>S2 Hybrid V2.0</strong></td>
+        <td>161</td>
+        <td><span class="badge yellow">42.2%</span></td>
+        <td>1.679</td>
+        <td style="color:var(--green)">+$6,212</td>
+        <td style="color:var(--yellow)">-$1,177</td>
+        <td style="color:var(--yellow)">19.0%</td>
+        <td>+$226</td>
+        <td>-$98</td>
+        <td>2.30</td>
+        <td><span class="badge yellow">time_bleed 52%</span></td>
+      </tr>
+      <tr>
+        <td><strong>S2 Pullback V1.9</strong></td>
+        <td>200</td>
+        <td><span class="badge yellow">44.0%</span></td>
+        <td>1.681</td>
+        <td style="color:var(--green)">+$7,722</td>
+        <td style="color:var(--red)">-$1,431</td>
+        <td style="color:var(--red)">18.5%</td>
+        <td>+$217</td>
+        <td>-$101</td>
+        <td>2.14</td>
+        <td><span class="badge yellow">time_bleed 54%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="insight-box success">
+      <div class="head">✓ S1 優勢：低回撤 + 高頻率</div>
+      S1 雖然每筆盈虧比最低（1.34），但勝率最高（53.2%）且回撤控制最佳（僅 $494）。適合作為核心倉位策略，穩定累積。
+    </div>
+    <div class="insight-box success">
+      <div class="head">✓ S2 優勢：高盈虧比</div>
+      S2-Hybrid 和 S2-Pullback 的盈虧比（~2.1–2.3）遠優於 S1，表示一旦方向對了報酬率很高。問題在於需要耐心持倉，但持倉太久反而 time_bleed 增加。
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: 20 策略實驗 ===== -->
+<div class="section">
+  <h2>4. 20 策略實驗結果排名</h2>
+  <p style="color:var(--red);font-size:12px;margin-bottom:16px;">
+    ⚠ 注意：實驗回測僅使用 3 天 K 棒資料（414 根 30 分鐘 K 棒，2026-04-14 至 2026-04-16），樣本數極少，統計結果不可靠。需補充更長時間資料後才能判斷策略優劣。
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>排名</th>
+        <th>策略 ID</th>
+        <th>分組</th>
+        <th>描述</th>
+        <th>交易筆</th>
+        <th>勝率</th>
+        <th>獲利因子</th>
+        <th>淨盈虧%</th>
+        <th>最大連虧</th>
+        <th>綜合分數</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(245,158,11,0.04)">
+        <td><span class="rank-badge rank-1">1</span></td>
+        <td><strong>E06</strong> RSI_Oversold</td>
+        <td><span class="badge cyan">Oscillator</span></td>
+        <td>RSI(14) 從超賣區 (30) 向上穿越</td>
+        <td style="color:var(--muted)">5</td>
+        <td><span class="badge green">60.0%</span></td>
+        <td style="color:var(--green)">3.000</td>
+        <td style="color:var(--green)">+2.00%</td>
+        <td>2</td>
+        <td><strong>0.8931</strong><div class="score-bar"><div class="score-fill" style="width:89.31%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-2">2</span></td>
+        <td><strong>E15</strong> Inside_Bar</td>
+        <td><span class="badge orange">Breakout</span></td>
+        <td>Inside Bar 向上突破</td>
+        <td style="color:var(--muted)">7</td>
+        <td><span class="badge yellow">42.9%</span></td>
+        <td style="color:var(--yellow)">1.500</td>
+        <td style="color:var(--green)">+1.00%</td>
+        <td>2</td>
+        <td><strong>0.6692</strong><div class="score-bar"><div class="score-fill" style="width:66.92%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-3">3</span></td>
+        <td><strong>E13</strong> BB_Basis_Walk</td>
+        <td><span class="badge blue">BB</span></td>
+        <td>上升趨勢中回踩 BB 中軌</td>
+        <td style="color:var(--muted)">5</td>
+        <td><span class="badge yellow">40.0%</span></td>
+        <td style="color:var(--yellow)">1.715</td>
+        <td style="color:var(--green)">+0.83%</td>
+        <td>2</td>
+        <td><strong>0.6470</strong><div class="score-bar"><div class="score-fill" style="width:64.70%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-n">4</span></td>
+        <td><strong>E09</strong> Williams_R</td>
+        <td><span class="badge cyan">Oscillator</span></td>
+        <td>Williams %R(14) 離開超賣區</td>
+        <td style="color:var(--muted)">13</td>
+        <td><span class="badge red">38.5%</span></td>
+        <td>1.093</td>
+        <td style="color:var(--green)">+0.37%</td>
+        <td>4</td>
+        <td>0.5933<div class="score-bar"><div class="score-fill" style="width:59.33%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-n">5</span></td>
+        <td><strong>E19</strong> Bullish_Engulf</td>
+        <td><span class="badge purple">Pattern</span></td>
+        <td>吞噬 K 棒確認</td>
+        <td style="color:var(--muted)">9</td>
+        <td><span class="badge red">33.3%</span></td>
+        <td style="color:var(--red)">0.870</td>
+        <td style="color:var(--red)">-0.35%</td>
+        <td>5</td>
+        <td>0.4785<div class="score-bar"><div class="score-fill" style="width:47.85%"></div></div></td>
+      </tr>
+      <tr style="color:var(--muted)">
+        <td colspan="10" style="padding:8px 10px;font-size:12px;">以下策略（E11–E20）均為負盈虧或零交易，此資料量下不具參考價值...</td>
+      </tr>
+      <tr style="color:var(--muted)">
+        <td colspan="2">E10, E20, E05</td>
+        <td colspan="8">0 筆交易（信號條件在 3 天內未觸發）</td>
+      </tr>
+      <tr style="color:var(--muted)">
+        <td colspan="2">E18, E02</td>
+        <td colspan="8">4 筆交易全虧損</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 5: Next Action ===== -->
+<div class="section">
+  <h2>5. Next Action — 優先行動計畫</h2>
+
+  <div style="margin-bottom:20px;">
+    <h3 style="color:var(--red)">緊急優先（本週）</h3>
+    <ul class="todo-list">
+      <li>
+        <div class="todo-num urgent">1</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag data">資料</span> 補充 K 棒歷史資料至 6–12 個月</div>
+          <div class="desc">
+            目前 FX_IDC_XAUUSD, 30.csv 僅有 3 天（414 根 K 棒）。20 策略實驗的所有結果都基於此資料，統計完全不可靠。<br>
+            <strong>做法：</strong> 從 TradingView 匯出 30 分鐘 K 棒（含 BB + EMA 指標），時間範圍建議 2025-01-01 至 2026-04-26，覆蓋所有策略 CSV 的交易期間。
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num urgent">2</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag optimize">優化</span> S2-Hybrid / S2-Pullback：加入時間止損（48 bars = 24 小時）</div>
+          <div class="desc">
+            兩個策略超過 50% 的虧損都是 time_bleed（持倉太久）。在 Pine Script 中加入 <code>time_close</code> 條件：若持倉超過 48 根 30 分鐘 K 棒仍未觸及 TP/SL，強制出場。<br>
+            <strong>預期效果：</strong> 減少最大回撤、降低均虧絕對值、提升資金使用效率。
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <h3 style="color:var(--yellow)">中優先（本月）</h3>
+    <ul class="todo-list">
+      <li>
+        <div class="todo-num medium">3</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag optimize">優化</span> S1-AweWithBB：解決 immediate_loss 問題（31% 虧損）</div>
+          <div class="desc">
+            30.9% 的虧損在進場後幾乎立即反向（MFE &lt; 0.1%）。建議分析這些交易的進場情境：BB 位置（%B 值）、趨勢方向（EMA 斜率）、AO 強度。<br>
+            <strong>做法：</strong> 在 pre_entry.py Layer 2 分析中，用補齊後的 K 棒資料查看 immediate_loss 交易的 BB%B 分佈，找出可過濾的特徵。
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num medium">4</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag strategy">策略</span> S2-Hybrid：停用歐盤交易；S2-Pullback：停用亞盤交易</div>
+          <div class="desc">
+            時段分析顯示：S2-Hybrid 的歐盤勝率僅 34.4%（vs 美盤 45%），S2-Pullback 的亞盤勝率僅 39.5%（vs 美盤 49.3%）。<br>
+            <strong>做法：</strong> 在 Pine Script 中加入 session filter，設定允許進場的時段。可以在回測中驗證是否確實提升盈虧比。
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num medium">5</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag validate">驗證</span> 用 TradingView 驗證實驗前三名策略（E06, E15, E13）</div>
+          <div class="desc">
+            補充 K 棒資料後，重跑 run_experiments.py，確認排名是否穩定。<br>
+            Pine Scripts 已生成於 XAUUSD-Long-Experiments/pine/，可直接貼入 TradingView 的 Pine Script 編輯器進行完整回測（覆蓋更長時間範圍）。
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 style="color:var(--muted)">低優先（長期）</h3>
+    <ul class="todo-list">
+      <li>
+        <div class="todo-num low">6</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag strategy">策略</span> 探索 S1 + S2 組合策略</div>
+          <div class="desc">S1 提供高頻穩定現金流（低回撤），S2 提供大波段獲利（高盈虧比）。可以考慮按資金比例分配，或用 S2 作為 S1 的加碼條件（S1 進場後若 S2 也同向，加倉）。</div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num low">7</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag data">資料</span> 整合更多市場情境特徵</div>
+          <div class="desc">加入 DXY（美元指數）趨勢、VIX 波動率環境、黃金月度偏向（COT 報告）作為市場過濾器，只在對黃金有利的宏觀環境中做多。</div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num low">8</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag optimize">優化</span> 動態停損：ATR-based SL 取代固定 0.5%</div>
+          <div class="desc">目前實驗引擎使用固定 0.5% SL，但在高波動期間可能太緊，在低波動期間可能太寬。改用 ATR(14) × 1.5 作為停損距離，讓 SL 隨市場動態調整。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: 摘要 ===== -->
+<div class="section">
+  <h2>6. 執行摘要</h2>
+  <div class="grid-3">
+    <div class="insight-box success">
+      <div class="head">✓ 三策略均盈利</div>
+      S1: $6,137 &nbsp;|&nbsp; S2-Hybrid: $6,212 &nbsp;|&nbsp; S2-Pullback: $7,722<br>
+      總計淨盈虧超過 $20,000 USD，但各策略均有明顯改善空間。
+    </div>
+    <div class="insight-box warn">
+      <div class="head">⚠ 最緊迫問題：time_bleed</div>
+      S2 兩個策略超過 50% 虧損源於「拖太久才停損」。加入時間止損是最快提升績效的改動，且實作簡單。
+    </div>
+    <div class="insight-box">
+      <div class="head">📊 下一步關鍵：補資料</div>
+      20 策略實驗的結論完全依賴更長的 K 棒資料。<strong>最優先行動是補充 6–12 個月的歷史 K 棒</strong>，之後所有策略的分析才有統計意義。
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
+  Generated by Claude Code &nbsp;|&nbsp; XAUUSD Long-Only Analysis Toolkit &nbsp;|&nbsp; 2026-04-27
+</div>
+
+</body>
+</html>
