@@ -106,7 +106,10 @@
     <span style="opacity:.6">&#128196;</span> S2 · Pullback V1.9
   </a>
   <a href="XAUUSD-Long-Experiments/report.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--purple);text-decoration:none;font-size:13px;font-weight:500;">
-    <span style="opacity:.6">&#128202;</span> 20 策略實驗報告
+    <span style="opacity:.6">&#128202;</span> 多單實驗報告（20 策略）
+  </a>
+  <a href="XAUUSD-Short-Experiments/report.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--card);border:1px solid rgba(239,68,68,0.4);border-radius:8px;color:var(--red);text-decoration:none;font-size:13px;font-weight:500;">
+    <span style="opacity:.6">&#128202;</span> 空單實驗報告（20 策略）
   </a>
 </div>
 
@@ -465,9 +468,113 @@
   </div>
 </div>
 
-<!-- ===== SECTION 6: Next Action ===== -->
+<!-- ===== SECTION 6: Short Experiments ===== -->
 <div class="section">
-  <h2>6. Next Action — 優先行動計畫</h2>
+  <h2>6. 20 策略空單實驗結果排名</h2>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:4px;">
+    回測資料：csv/FX_IDC_XAUUSD, 30.csv &nbsp;|&nbsp; 3058 根 K 棒 &nbsp;|&nbsp; 2026-01-21 至 2026-04-27（約 3 個月）
+  </p>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">
+    引擎：SL 0.5% 在進場價上方，TP 1.0% 在進場價下方，最多持倉 48 bars（2:1 R:R）
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>排名</th>
+        <th>策略 ID</th>
+        <th>分組</th>
+        <th>描述</th>
+        <th>交易筆</th>
+        <th>勝率</th>
+        <th>獲利因子</th>
+        <th>淨盈虧%</th>
+        <th>最大連虧</th>
+        <th>綜合分數</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(245,158,11,0.04)">
+        <td><span class="rank-badge rank-1">1</span></td>
+        <td><strong>S19</strong> Bearish_Engulf</td>
+        <td><span class="badge purple">Pattern</span></td>
+        <td>空頭吞噬 K 棒確認</td>
+        <td style="color:var(--muted)">87</td>
+        <td><span class="badge yellow">42.5%</span></td>
+        <td style="color:var(--green)">1.507</td>
+        <td style="color:var(--green)">+12.4%</td>
+        <td>8</td>
+        <td><strong>0.893</strong><div class="score-bar"><div class="score-fill" style="width:89.3%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-2">2</span></td>
+        <td><strong>S13</strong> BB_Basis_Reject</td>
+        <td><span class="badge cyan">BB</span></td>
+        <td>BB 中軌反壓（下降趨勢）</td>
+        <td style="color:var(--muted)">69</td>
+        <td><span class="badge yellow">42.0%</span></td>
+        <td style="color:var(--green)">1.450</td>
+        <td style="color:var(--green)">+9.0%</td>
+        <td>5</td>
+        <td><strong>0.857</strong><div class="score-bar"><div class="score-fill" style="width:85.7%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-3">3</span></td>
+        <td><strong>S12</strong> BB_Squeeze_Break</td>
+        <td><span class="badge cyan">BB</span></td>
+        <td>BB 擠壓後向下突破</td>
+        <td style="color:var(--muted)">105</td>
+        <td><span class="badge red">39.0%</span></td>
+        <td style="color:var(--yellow)">1.252</td>
+        <td style="color:var(--green)">+8.0%</td>
+        <td>6</td>
+        <td><strong>0.808</strong><div class="score-bar"><div class="score-fill" style="width:80.8%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-n">4</span></td>
+        <td><strong>S18</strong> Shooting_Star</td>
+        <td><span class="badge purple">Pattern</span></td>
+        <td>射擊之星 K 棒</td>
+        <td style="color:var(--muted)">18</td>
+        <td><span class="badge yellow">44.4%</span></td>
+        <td style="color:var(--green)">1.600</td>
+        <td style="color:var(--green)">+3.0%</td>
+        <td>6</td>
+        <td>0.769<div class="score-bar"><div class="score-fill" style="width:76.9%"></div></div></td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-n">5</span></td>
+        <td><strong>S07</strong> Stoch_Cross</td>
+        <td><span class="badge cyan">Oscillator</span></td>
+        <td>Stochastic 超買區下穿</td>
+        <td style="color:var(--muted)">136</td>
+        <td><span class="badge red">37.5%</span></td>
+        <td style="color:var(--yellow)">1.184</td>
+        <td style="color:var(--green)">+7.8%</td>
+        <td>13</td>
+        <td>0.743<div class="score-bar"><div class="score-fill" style="width:74.3%"></div></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="insight-box" style="background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.2);">
+      <div class="head" style="color:var(--red)">空頭 vs 多頭 Top-1 比較</div>
+      空頭 S19 Bearish Engulf：+12.4%（87 筆）<br>
+      多頭 E03 MACD Signal：+9.0%（51 筆）<br>
+      <strong>空頭策略在此 3 個月期間表現更強</strong>，符合 2026 Q1 黃金波動較大、有明顯回調的背景。
+    </div>
+    <div class="insight-box success">
+      <div class="head">BB 策略雙向有效</div>
+      多頭：E12 BB Squeeze Break 排名 #2（+8.8%）<br>
+      空頭：S12 BB Squeeze Break 排名 #3（+8.0%）、S13 BB Basis Reject 排名 #2（+9.0%）<br>
+      BB 在 XAUUSD 30m 上雙向都有預測力，值得深入研究。
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 7: Next Action ===== -->
+<div class="section">
+  <h2>7. Next Action — 優先行動計畫</h2>
 
   <div style="margin-bottom:20px;">
     <h3 style="color:var(--red)">緊急優先（本週）</h3>
@@ -559,9 +666,9 @@
   </div>
 </div>
 
-<!-- ===== SECTION 7: 摘要 ===== -->
+<!-- ===== SECTION 8: 摘要 ===== -->
 <div class="section">
-  <h2>7. 執行摘要</h2>
+  <h2>8. 執行摘要</h2>
   <div class="grid-3">
     <div class="insight-box success">
       <div class="head">✓ 三策略均長期盈利</div>
@@ -582,7 +689,7 @@
 </div>
 
 <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
-  Generated by Claude Code &nbsp;|&nbsp; XAUUSD Long-Only Analysis Toolkit &nbsp;|&nbsp; 2026-04-27
+  Generated by Claude Code &nbsp;|&nbsp; XAUUSD Long + Short Analysis Toolkit &nbsp;|&nbsp; 2026-04-27
 </div>
 
 </body>
