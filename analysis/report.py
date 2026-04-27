@@ -86,6 +86,8 @@ def generate(
     profile: dict,
     enriched: pd.DataFrame,
     out_path: Path,
+    dxy_stats: dict | None = None,
+    corr_df: pd.DataFrame | None = None,
 ) -> None:
     """
     Renders and writes a self-contained HTML report to out_path.
@@ -139,8 +141,8 @@ def generate(
         kb_note = (
             f'<div class="note">K-Bar coverage: {cov["with_kbar_data"]}/{cov["total_losses"]} '
             f'trades ({cov["coverage_pct"]}%). '
-            f'To extend coverage, export the full OHLCV history from TradingView and '
-            f'replace <code>FX_IDC_XAUUSD, 30.csv</code>.</div>'
+            f'To extend coverage, export the full OHLCV+RSI history from TradingView and '
+            f'place it in <code>csv/FX_IDC_XAUUSD, 30.csv</code>.</div>'
             if cov["coverage_pct"] < 100 else ""
         )
 
@@ -173,6 +175,40 @@ def generate(
 
     # ---- Fail by session table ----
     fbs_html = _table(fail_patterns.fail_by_session(classified))
+
+    # ---- DXY section ----
+    dxy_html = ""
+    if dxy_stats:
+        dxy_wr_b64 = _fig_to_b64(charts.dxy_winrate_chart(dxy_stats, strategy_id))
+        rows = []
+        for grp_name, df_grp in dxy_stats.items():
+            if not df_grp.empty:
+                rows.append(f"<b>{grp_name.replace('_', ' ').title()}</b>")
+                rows.append(_table(df_grp))
+        dxy_tables = "<br>".join(rows)
+        corr_html = ""
+        if corr_df is not None and not corr_df.empty:
+            corr_b64 = _fig_to_b64(charts.dxy_correlation_chart(corr_df, strategy_id))
+            avg_corr = corr_df["rolling_corr"].dropna().mean()
+            corr_html = f"""
+            <h2>DXY × XAUUSD Return Correlation</h2>
+            <div class="card">
+              <div class="note">30-day rolling correlation between DXY and XAUUSD daily returns.
+                Avg: <b>{avg_corr:.3f}</b> (negative = inverse relationship, as expected for gold).</div>
+              {_img_tag(corr_b64, "DXY Correlation")}
+            </div>"""
+        dxy_html = f"""
+        <h2>DXY (US Dollar Index) Analysis</h2>
+        <div class="card">
+          <p style="color:#7f8c8d;font-size:.9em;">
+            DXY and gold typically move inversely — a strengthening dollar pressures gold prices.
+            Win rate is shown per DXY regime at each trade entry date (using 1D DXY data).
+          </p>
+          {_img_tag(dxy_wr_b64, "DXY Win Rate")}
+          <br>{dxy_tables}
+        </div>
+        {corr_html}
+        """
 
     # ---- Assemble HTML ----
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -229,6 +265,8 @@ def generate(
   </div>
 
   {pre_entry_charts_html}
+
+  {dxy_html}
 
   <footer>XAUUSD Strategy Fail-Pattern Toolkit &nbsp;·&nbsp; {generated_at}</footer>
 </div>

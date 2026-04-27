@@ -53,7 +53,7 @@ def main() -> None:
     print(scored[display_cols].to_string(float_format="{:.3f}".format))
 
     best = scored.index[0]
-    print(f"\n  🏆 Best strategy: {best}  (score={scored.loc[best,'score']:.3f})")
+    print(f"\n  [BEST] {best}  (score={scored.loc[best,'score']:.3f})")
     print(f"     Trades: {scored.loc[best,'total']:.0f}  |  "
           f"Win rate: {scored.loc[best,'win_rate']:.1%}  |  "
           f"Net P&L: {scored.loc[best,'net_pnl_pct']:+.2f}%")

@@ -17,13 +17,21 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
 
-from analysis.config import STRATEGIES, PRICE_CSV
-from analysis import loader, metrics, fail_patterns, pre_entry, charts, report
+from analysis.config import STRATEGIES, PRICE_CSV, DXY_CSV_1D, DXY_CSV_30, XAUUSD_CSV_1D
+from analysis import loader, metrics, fail_patterns, pre_entry, charts, report, dxy_analysis
 
 REPORTS = Path(__file__).parent / "reports"
 
 
-def run_strategy(cfg: dict) -> None:
+def _load_dxy_data():
+    """Load DXY 1D and 30m data; returns (dxy_1d, dxy_30, xauusd_1d)."""
+    dxy_1d   = loader.load_dxy(DXY_CSV_1D)   if DXY_CSV_1D.exists()   else None
+    dxy_30   = loader.load_dxy(DXY_CSV_30)   if DXY_CSV_30.exists()   else None
+    xau_1d   = loader.load_price(XAUUSD_CSV_1D) if XAUUSD_CSV_1D.exists() else None
+    return dxy_1d, dxy_30, xau_1d
+
+
+def run_strategy(cfg: dict, dxy_1d=None, dxy_30=None, xauusd_1d=None) -> None:
     name    = cfg["id"]
     version = cfg["version"]
     csv_path = cfg["folder"] / cfg["trades_csv"]
@@ -75,9 +83,23 @@ def run_strategy(cfg: dict) -> None:
         print(f"\n  --- K-Bar Coverage: {cov['with_kbar_data']}/{cov['total_losses']} "
               f"({cov['coverage_pct']}%) ---")
         if cov["with_kbar_data"] > 0:
-            cols = ["trade_id", "entry_time", "bb_pct_b", "price_vs_ema",
+            cols = ["trade_id", "entry_time", "rsi", "rsi_vs_ma",
                     "prev_1_dir", "prev_3_green", "momentum_3"]
-            print(enriched.dropna(subset=["bb_pct_b"])[cols].to_string())
+            print(enriched.dropna(subset=["rsi"])[cols].to_string())
+
+    # ── DXY analysis ──────────────────────────────────────────────
+    dxy_stats_out, corr_df_out = None, None
+    if dxy_1d is not None:
+        enriched_dxy = dxy_analysis.enrich_trades_with_dxy(trades, dxy_1d, dxy_30)
+        dxy_stats_out = dxy_analysis.dxy_regime_stats(enriched_dxy)
+        print(f"\n  --- DXY Win Rate by RSI Bucket ---")
+        print(dxy_stats_out["by_bucket"].to_string())
+        print(f"\n  --- DXY Win Rate by Trend ---")
+        print(dxy_stats_out["by_trend"].to_string())
+        if xauusd_1d is not None:
+            corr_df_out = dxy_analysis.dxy_correlation_stats(xauusd_1d, dxy_1d)
+            avg_c = corr_df_out["rolling_corr"].dropna().mean()
+            print(f"\n  --- DXY×XAUUSD Avg 30D Correlation: {avg_c:.3f} ---")
 
     # ── PNG charts (reference folder) ────────────────────────────
     out_dir = REPORTS / name
@@ -118,6 +140,8 @@ def run_strategy(cfg: dict) -> None:
         profile=profile,
         enriched=enriched,
         out_path=html_path,
+        dxy_stats=dxy_stats_out,
+        corr_df=corr_df_out,
     )
 
 
@@ -132,9 +156,17 @@ def main() -> None:
         print(f"No match. Available: {available}")
         sys.exit(1)
 
+    dxy_1d, dxy_30, xauusd_1d = _load_dxy_data()
+    if dxy_1d is not None:
+        print(f"[DXY] 1D data: {len(dxy_1d)} bars "
+              f"({dxy_1d['time'].min().date()} → {dxy_1d['time'].max().date()})")
+    if dxy_30 is not None:
+        print(f"[DXY] 30m data: {len(dxy_30)} bars "
+              f"({dxy_30['time'].min().date()} → {dxy_30['time'].max().date()})")
+
     for cfg in strategies:
         try:
-            run_strategy(cfg)
+            run_strategy(cfg, dxy_1d=dxy_1d, dxy_30=dxy_30, xauusd_1d=xauusd_1d)
         except FileNotFoundError as exc:
             print(f"[SKIP] {cfg['id']}: {exc}", file=sys.stderr)
 

@@ -95,33 +95,44 @@ def load_trades(csv_path: Path) -> pd.DataFrame:
     return trades.sort_values("entry_time").reset_index(drop=True)
 
 
-def load_price(csv_path: Path) -> pd.DataFrame:
-    """
-    Reads the 30-min OHLCV file exported from TradingView.
-
-    Preserves BB and Fast EMA columns when present (exported with indicators).
-    Returned column names are normalised:
-        time, open, high, low, close, bb_basis, bb_upper, bb_lower, bb_ema
-    Any duplicate Basis/Upper/Lower columns (TradingView exports them twice)
-    are deduplicated — only the first occurrence is kept.
-    """
-    df = pd.read_csv(csv_path, encoding="utf-8-sig")
+def _parse_price_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalise a raw TradingView price/indicator CSV into a clean DataFrame."""
     df["time"] = (
         pd.to_datetime(df["time"], utc=True)
         .dt.tz_convert("Asia/Taipei")
         .dt.tz_localize(None)
     )
-
-    # Rename indicator columns when present, ignoring duplicate suffixes (.1)
     rename_map = {
-        "Basis": "bb_basis", "Upper": "bb_upper", "Lower": "bb_lower",
-        "Fast EMA": "bb_ema",
+        "RSI": "rsi",
+        "RSI-based MA": "rsi_ma",
+        "Regular Bullish": "bull_div",
+        "Regular Bearish": "bear_div",
     }
     df = df.rename(columns=rename_map)
 
     keep = ["time", "open", "high", "low", "close"]
-    for col in ["bb_basis", "bb_upper", "bb_lower", "bb_ema"]:
+    for col in ["rsi", "rsi_ma", "bull_div", "bear_div"]:
         if col in df.columns:
             keep.append(col)
 
     return df[keep].sort_values("time").reset_index(drop=True)
+
+
+def load_price(csv_path: Path) -> pd.DataFrame:
+    """
+    Reads a 30-min (or any timeframe) OHLCV file exported from TradingView.
+
+    Normalised columns: time, open, high, low, close, rsi, rsi_ma,
+                        bull_div, bear_div  (indicator columns present when exported).
+    """
+    raw = pd.read_csv(csv_path, encoding="utf-8-sig")
+    return _parse_price_df(raw)
+
+
+def load_dxy(csv_path: Path) -> pd.DataFrame:
+    """
+    Reads a DXY CSV exported from TradingView (any timeframe).
+    Returns same column layout as load_price().
+    """
+    raw = pd.read_csv(csv_path, encoding="utf-8-sig")
+    return _parse_price_df(raw)

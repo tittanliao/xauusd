@@ -18,10 +18,9 @@ To extend K-bar coverage:
     The analysis will automatically pick up the additional rows.
 
 K-bar features extracted per entry (when price data is available):
-    bb_pct_b        — price position within BB: (close-lower)/(upper-lower)*100
-                      0 = at lower band, 100 = at upper band, >100 = above upper
-    bb_width_pct    — (upper-lower)/basis*100  (volatility proxy)
-    price_vs_ema    — close minus Fast EMA at entry bar
+    rsi             — RSI(14) value at entry bar
+    rsi_vs_ma       — RSI minus RSI-based MA (positive = RSI above trend, momentum up)
+    rsi_slope_3     — (rsi[-1] - rsi[-4]) / 3  (3-bar RSI slope)
     prev_1_dir      — direction of bar immediately before entry (+1 bullish, -1 bearish)
     prev_3_green    — count of green (close>open) bars in last 3 bars
     prev_3_range    — avg (high-low) of last 3 bars
@@ -138,25 +137,21 @@ def _kbar_features_at(price: pd.DataFrame, entry_time: pd.Timestamp,
 
     feat: dict = {}
 
-    # BB position
-    if "bb_upper" in price.columns and "bb_lower" in price.columns:
-        bb_range = bar["bb_upper"] - bar["bb_lower"]
-        feat["bb_pct_b"] = (
-            (bar["close"] - bar["bb_lower"]) / bb_range * 100
-            if bb_range > 0 else np.nan
+    # RSI features
+    if "rsi" in price.columns:
+        feat["rsi"] = bar["rsi"]
+        feat["rsi_vs_ma"] = (
+            bar["rsi"] - bar["rsi_ma"] if "rsi_ma" in price.columns else np.nan
         )
-        feat["bb_width_pct"] = (
-            bb_range / bar["bb_basis"] * 100
-            if bar.get("bb_basis", 0) > 0 else np.nan
-        )
+        if pos >= n_lookback + 1:
+            oldest_rsi = price.loc[pos - n_lookback, "rsi"]
+            feat["rsi_slope_3"] = (bar["rsi"] - oldest_rsi) / n_lookback
+        else:
+            feat["rsi_slope_3"] = np.nan
     else:
-        feat["bb_pct_b"] = np.nan
-        feat["bb_width_pct"] = np.nan
-
-    # Price vs Fast EMA
-    feat["price_vs_ema"] = (
-        bar["close"] - bar["bb_ema"] if "bb_ema" in price.columns else np.nan
-    )
+        feat["rsi"] = np.nan
+        feat["rsi_vs_ma"] = np.nan
+        feat["rsi_slope_3"] = np.nan
 
     # Previous bar direction
     pb = price.loc[pos - 1]
@@ -185,7 +180,7 @@ def enrich_with_kbars(classified_losses: pd.DataFrame,
     Returns a new DataFrame (does not modify input).
     """
     feat_cols = [
-        "bb_pct_b", "bb_width_pct", "price_vs_ema",
+        "rsi", "rsi_vs_ma", "rsi_slope_3",
         "prev_1_dir", "prev_3_green", "prev_3_range", "momentum_3",
     ]
     result = classified_losses.copy()
@@ -204,7 +199,7 @@ def enrich_with_kbars(classified_losses: pd.DataFrame,
 def kbar_coverage(enriched: pd.DataFrame) -> dict:
     """Reports how many trades have K-bar data vs missing."""
     total = len(enriched)
-    covered = enriched["bb_pct_b"].notna().sum()
+    covered = enriched["rsi"].notna().sum()
     return {
         "total_losses": total,
         "with_kbar_data": int(covered),

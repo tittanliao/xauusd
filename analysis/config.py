@@ -6,7 +6,8 @@ The analysis pipeline will automatically pick it up.
 """
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT    = Path(__file__).parent.parent
+CSV_DIR = ROOT / "csv"
 
 STRATEGIES = [
     {
@@ -29,7 +30,10 @@ STRATEGIES = [
     },
 ]
 
-PRICE_CSV = ROOT / "FX_IDC_XAUUSD, 30.csv"
+PRICE_CSV    = CSV_DIR / "FX_IDC_XAUUSD, 30.csv"
+DXY_CSV_30   = CSV_DIR / "TVC_DXY, 30.csv"
+DXY_CSV_1D   = CSV_DIR / "TVC_DXY, 1D.csv"
+XAUUSD_CSV_1D = CSV_DIR / "FX_IDC_XAUUSD, 1D.csv"
 
 # --- Fail pattern classification thresholds ---
 # A loss where MFE% never exceeded this value is "immediate_loss" (entry was wrong instantly)

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(python -c ' *)",
+      "Bash(python main.py)",
+      "Bash(python3.12 main.py)",
+      "Bash(where python3 *)",
+      "Bash(where python *)",
+      "Bash(py --list)",
+      "PowerShell(py *)"
+    ]
+  }
+}
