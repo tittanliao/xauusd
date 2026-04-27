@@ -188,6 +188,34 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 
 ---
 
+## 換新電腦後的記憶設定
+
+Claude 的專案記憶存在 `.claude/memory/`（git 追蹤）。新電腦 `git clone` 後需執行一次下列指令，把系統記憶路徑指向專案資料夾。
+
+### Mac / Linux（在專案根目錄執行）
+
+```bash
+PROJ=$(pwd)
+SYSTEM_KEY=$(echo "$PROJ" | sed 's|^/||' | sed 's|/|-|g')
+rm -rf ~/.claude/projects/${SYSTEM_KEY}/memory
+ln -s "${PROJ}/.claude/memory" ~/.claude/projects/${SYSTEM_KEY}/memory
+```
+
+### Windows（PowerShell，在專案根目錄執行）
+
+```powershell
+$proj = (Get-Location).Path
+$key  = $proj -replace '\\', '-' -replace ':', ''   # e.g. C-Users-tittan-...
+$src  = "$proj\.claude\memory"
+$dst  = "$env:USERPROFILE\.claude\projects\-$key\memory"
+if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
+New-Item -ItemType Junction -Path $dst -Target $src
+```
+
+> Windows 使用 Junction（不需要管理員權限），Mac/Linux 使用 symlink。
+
+---
+
 ## 技術環境
 
 - Python 3.11（Windows 使用 `py -3.11`）

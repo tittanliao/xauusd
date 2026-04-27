@@ -10,7 +10,9 @@
       "Bash(where python3 *)",
       "Bash(where python *)",
       "Bash(py --list)",
-      "PowerShell(py *)"
+      "PowerShell(py *)",
+      "Bash(rm -rf /Users/tittan/.claude/projects/-Users-tittan-program-github-xauusd/memory)",
+      "Bash(ln -s /Users/tittan/program/github/xauusd/.claude/memory /Users/tittan/.claude/projects/-Users-tittan-program-github-xauusd/memory)"
     ]
   }
 }
