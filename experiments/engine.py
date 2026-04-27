@@ -52,6 +52,12 @@ def _finalise(t: Trade) -> None:
     t.result    = "win" if t.pnl_pct > 0 else "loss"
 
 
+def _finalise_short(t: Trade) -> None:
+    t.pnl_pct   = (t.entry_price - t.exit_price) / t.entry_price * 100
+    t.hold_bars = t.exit_bar - t.entry_bar
+    t.result    = "win" if t.pnl_pct > 0 else "loss"
+
+
 # ---------------------------------------------------------------------------
 # Core runner
 # ---------------------------------------------------------------------------
@@ -124,6 +130,84 @@ def run_backtest(
                     entry_price = ep,
                     sl_price    = ep * (1 - SL_PCT),
                     tp_price    = ep * (1 + TP_PCT),
+                    mfe_pct     = 0.0,
+                    mae_pct     = 0.0,
+                )
+                in_trade = True
+
+    return trades
+
+
+def run_backtest_short(
+    price: pd.DataFrame,
+    signal_fn: Callable[[pd.DataFrame, int], bool],
+) -> list[Trade]:
+    """
+    Short-side backtest engine.
+
+    signal_fn returns True when a short entry signal fires on bar[i] close.
+    Entry executes at bar[i+1] open.
+
+    SL: entry * (1 + SL_PCT)  — above entry price
+    TP: entry * (1 - TP_PCT)  — below entry price
+    MFE: how far price fell in our favour (positive when price drops)
+    MAE: how far price rose against us (stored as negative value)
+    PnL: (entry - exit) / entry * 100
+    """
+    trades: list[Trade] = []
+    in_trade = False
+    current: Trade | None = None
+
+    highs  = price["high"].to_numpy()
+    lows   = price["low"].to_numpy()
+    closes = price["close"].to_numpy()
+    opens  = price["open"].to_numpy()
+    times  = price["time"].to_numpy()
+
+    n = len(price)
+
+    for i in range(1, n):
+        if in_trade and current is not None:
+            # MFE for short = how far low went below entry (favourable)
+            current.mfe_pct = max(current.mfe_pct,
+                                  (current.entry_price - lows[i]) / current.entry_price * 100)
+            # MAE for short = how far high went above entry (adverse, stored negative)
+            current.mae_pct = min(current.mae_pct,
+                                  (current.entry_price - highs[i]) / current.entry_price * 100)
+
+            hit_sl = highs[i] >= current.sl_price
+            hit_tp = lows[i]  <= current.tp_price
+            timed  = (i - current.entry_bar) >= MAX_HOLD_BARS
+
+            if hit_sl and hit_tp:
+                reason, px = "SL", current.sl_price
+            elif hit_sl:
+                reason, px = "SL", current.sl_price
+            elif hit_tp:
+                reason, px = "TP", current.tp_price
+            elif timed:
+                reason, px = "TIME", closes[i]
+            else:
+                continue
+
+            current.exit_bar    = i
+            current.exit_time   = pd.Timestamp(times[i])
+            current.exit_price  = px
+            current.exit_reason = reason
+            _finalise_short(current)
+            trades.append(current)
+            in_trade = False
+            current  = None
+
+        if (not in_trade) and (i < n - 1):
+            if signal_fn(price, i):
+                ep = opens[i + 1]
+                current = Trade(
+                    entry_bar   = i + 1,
+                    entry_time  = pd.Timestamp(times[i + 1]),
+                    entry_price = ep,
+                    sl_price    = ep * (1 + SL_PCT),
+                    tp_price    = ep * (1 - TP_PCT),
                     mfe_pct     = 0.0,
                     mae_pct     = 0.0,
                 )

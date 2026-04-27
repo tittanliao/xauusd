@@ -121,6 +121,10 @@ def donchian_high(high: np.ndarray, period: int = 20) -> np.ndarray:
     return pd.Series(high).shift(1).rolling(period).max().to_numpy()
 
 
+def donchian_low(low: np.ndarray, period: int = 20) -> np.ndarray:
+    return pd.Series(low).shift(1).rolling(period).min().to_numpy()
+
+
 def mfi(high: np.ndarray, low: np.ndarray, close: np.ndarray,
         volume: np.ndarray | None, period: int = 14) -> np.ndarray:
     """Money Flow Index. If volume unavailable returns RSI as proxy."""
