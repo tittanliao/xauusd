@@ -5,7 +5,7 @@
 分析 XAUUSD（黃金/美元）Long-Only 交易策略的失敗模式，並系統性地測試新策略。
 包含兩大模組：
 
-1. **Fail-Pattern Analysis** — 分析現有策略的虧損交易，找出失敗根因
+1. **Fail-Pattern Analysis** — 分析現有策略的虧損交易，找出失敗根因（含 DXY 相關性）
 2. **20-Strategy Experiment Engine** — 回測 20 個新策略，自動生成 TradingView Pine Script
 
 ---
@@ -13,16 +13,13 @@
 ## 執行方式
 
 ```bash
-# 分析所有 3 個既有策略（生成 HTML report）
-python main.py
+# Windows 環境（Python 3.11）
+py -3.11 main.py                  # 分析所有 3 個既有策略
+py -3.11 main.py S1-AweWithBB     # 只分析單一策略
+py -3.11 main.py S2-Hybrid
+py -3.11 main.py S2-Pullback
 
-# 只分析單一策略
-python main.py S1-AweWithBB
-python main.py S2-Hybrid
-python main.py S2-Pullback
-
-# 執行 20 策略實驗（生成 report + 20 個 Pine Scripts）
-python run_experiments.py
+py -3.11 run_experiments.py       # 執行 20 策略實驗
 ```
 
 ---
@@ -31,33 +28,61 @@ python run_experiments.py
 
 ```
 xauusd/
-├── analysis/           # Fail-pattern 分析套件（1,142 行）
-│   ├── config.py       # 3 個策略設定 + 失敗分類門檻
-│   ├── loader.py       # TradingView CSV → 正規化 DataFrame
-│   ├── metrics.py      # 統計指標（win_rate, profit_factor, drawdown）
-│   ├── fail_patterns.py# 虧損分類邏輯（核心）
-│   ├── pre_entry.py    # 進場前情境分析（交易資料 + K 棒特徵）
-│   ├── charts.py       # 13 種 matplotlib 圖表
-│   └── report.py       # 自含式 HTML 報告生成器
+├── analysis/               # Fail-pattern 分析套件
+│   ├── config.py           # 3 個策略設定 + 失敗分類門檻 + CSV 路徑
+│   ├── loader.py           # TradingView CSV → 正規化 DataFrame（load_price / load_dxy）
+│   ├── metrics.py          # 統計指標（win_rate, profit_factor, drawdown）
+│   ├── fail_patterns.py    # 虧損分類邏輯（核心）
+│   ├── pre_entry.py        # 進場前情境分析（交易資料 + K 棒 RSI 特徵）
+│   ├── dxy_analysis.py     # DXY 相關性分析（新）
+│   ├── charts.py           # matplotlib 圖表（含 DXY 圖）
+│   └── report.py           # 自含式 HTML 報告生成器（含 DXY 段落）
 │
-├── experiments/        # 20 策略回測引擎（1,575 行）
-│   ├── engine.py       # 核心回測邏輯（進場/SL/TP/時間出場）
-│   ├── indicators.py   # 11 個技術指標
-│   ├── strategies.py   # 20 個策略信號（E01–E20）
-│   ├── runner.py       # 執行所有策略 + 複合評分
-│   ├── pine_generator.py # 自動生成 20 個 Pine Script v6
-│   └── report.py       # HTML 實驗結果儀表板
+├── experiments/            # 20 策略回測引擎
+│   ├── engine.py           # 核心回測邏輯（進場/SL/TP/時間出場）
+│   ├── indicators.py       # 11 個技術指標
+│   ├── strategies.py       # 20 個策略信號（E01–E20）
+│   ├── runner.py           # 執行所有策略 + 複合評分
+│   ├── pine_generator.py   # 自動生成 20 個 Pine Script v6
+│   └── report.py           # HTML 實驗結果儀表板
 │
-├── main.py             # Fail-pattern 分析入口
-├── run_experiments.py  # 20 策略實驗入口
+├── csv/                    # 所有 TradingView 匯出資料（統一放這裡）
+│   ├── FX_IDC_XAUUSD, 30.csv    # 30m K 棒 2026-01-21 起（3058 根）
+│   ├── FX_IDC_XAUUSD, 60.csv    # 60m K 棒 2025-10-15 起
+│   ├── FX_IDC_XAUUSD, 240.csv   # 4H K 棒 2024-05-01 起
+│   ├── FX_IDC_XAUUSD, 1D.csv    # 日線 2014-03-03 起（3058 根）
+│   ├── FX_IDC_XAUUSD, 1W.csv    # 週線
+│   ├── TVC_DXY, 30.csv          # DXY 30m 2026-01-22 起
+│   ├── TVC_DXY, 60.csv          # DXY 60m
+│   ├── TVC_DXY, 240.csv         # DXY 4H
+│   ├── TVC_DXY, 1D.csv          # DXY 日線 2014-03-10 起（3078 根）
+│   └── TVC_DXY, 1W.csv          # DXY 週線
 │
-├── XAUUSD-Long-S1-AweWithBB/   # S1 策略：交易 CSV + report.html + Pine script
-├── XAUUSD-Long-S2-Hybrid/      # S2 策略
-├── XAUUSD-Long-S2-Pullback/    # S3 策略（資料夾名稱帶 Pullback）
-├── XAUUSD-Long-Experiments/    # 20 策略輸出：report.html + pine/ 目錄
+├── main.py                 # Fail-pattern 分析入口
+├── run_experiments.py      # 20 策略實驗入口
+├── final_report.html       # 整合報告（手動維護）
 │
-└── FX_IDC_XAUUSD, 30.csv       # 30 分鐘 OHLCV + BB + EMA（414 根 K 棒，2026-04-14 起）
+├── XAUUSD-Long-S1-AweWithBB/    # S1 策略：交易 CSV + report.html + Pine script
+├── XAUUSD-Long-S2-Hybrid/       # S2 策略
+├── XAUUSD-Long-S2-Pullback/     # S3 策略（資料夾名帶 Pullback）
+└── XAUUSD-Long-Experiments/     # 20 策略輸出：report.html + pine/ 目錄
 ```
+
+---
+
+## CSV 欄位格式（TradingView 匯出）
+
+所有 csv/ 下的 K 棒檔案格式相同：
+```
+time, open, high, low, close, RSI, RSI-based MA,
+Regular Bullish, Regular Bullish Label, Regular Bearish, Regular Bearish Label
+```
+- `time`：帶時區的 ISO 字串（`+08:00`），loader 自動轉為 Asia/Taipei 無時區
+- `RSI`：RSI(14)
+- `RSI-based MA`：RSI 的移動平均線（趨勢確認）
+- `Regular Bullish/Bearish`：RSI 背離信號（有值 = 有信號，NaN = 無）
+
+**更新資料方式**：從 TradingView 匯出同樣格式的 CSV，直接覆蓋 `csv/` 下的對應檔案即可。
 
 ---
 
@@ -78,11 +103,30 @@ TIME_BLEED_MIN_BARS = 24
 FALSE_BREAKOUT_MAE_MFE_RATIO = 2.0
 ```
 
+### Pre-Entry K 棒特徵（analysis/pre_entry.py）
+
+使用 RSI 相關特徵（舊版為 BB%B，已移除）：
+- `rsi`：進場 K 棒的 RSI 值
+- `rsi_vs_ma`：RSI 減 RSI-based MA（正值 = RSI 在均線上 = 動能向上）
+- `rsi_slope_3`：3 根 K 棒的 RSI 斜率
+- `prev_1_dir`：前一根 K 棒方向（+1 陽線 / -1 陰線）
+- `prev_3_green`：前 3 根中有幾根陽線
+- `momentum_3`：前 3 根的價格動能百分比
+
+### DXY 分析（analysis/dxy_analysis.py）
+
+每筆交易新增 DXY 情境欄位：
+- `dxy_rsi_1d`：進場日期的 DXY 日線 RSI（覆蓋全部 2 年交易歷史）
+- `dxy_trend_1d`：DXY 收盤是否高於 20 日均線（up / down）
+- `dxy_rsi_vs_ma`：DXY RSI 減其 MA（正值 = 美元動能向上 = 黃金承壓）
+- `dxy_rsi_bucket`：RSI 分桶（oversold<30 / neutral_low / neutral_high / overbought>70）
+- `dxy_rsi_30`：30 分鐘 DXY RSI（僅 2026-01-22 後的交易有值）
+
 ### 回測引擎規則（experiments/engine.py）
 
 - **進場**：信號在 bar[i] 收盤觸發，下一根 bar[i+1] 開盤執行
-- **止損**：進場價 × (1 - 0.5%) = 0.5% 以下
-- **止盈**：進場價 × (1 + 1.0%) = 1.0% 以上（2:1 R:R）
+- **止損**：進場價 × (1 - 0.5%)
+- **止盈**：進場價 × (1 + 1.0%)（2:1 R:R）
 - **時間出場**：最多持倉 48 根 K 棒（24 小時）
 
 ### 交易時段定義（UTC+8）
@@ -91,74 +135,60 @@ FALSE_BREAKOUT_MAE_MFE_RATIO = 2.0
 - Europe（歐盤）：16:00–21:59
 - US（美盤）：22:00–06:59
 
-### 複合評分公式（experiments/runner.py）
+---
 
-```
-score = (win_rate × 0.25) + (profit_factor × 0.25) + (trade_count_norm × 0.20)
-      + (net_pnl_pct × 0.20) - (max_consec_loss × 0.10)
-```
+## 現有策略最新績效（2026-04-27）
+
+| ID | 策略名稱 | 版本 | 交易筆數 | 勝率 | 獲利因子 | 淨盈虧 | 最大回撤 | 主要問題 |
+|----|---------|------|---------|------|---------|--------|---------|---------|
+| S1 | AweWithBB | V3.4 | 504 | 53.2% | 1.525 | +$6,137 | -$494 | immediate_loss 31% |
+| S2 | Hybrid | V2.0 | 161 | 42.2% | 1.679 | +$6,212 | -$1,177 | time_bleed 52% |
+| S3 | Pullback | V1.9 | 200 | 44.0% | 1.681 | +$7,722 | -$1,431 | time_bleed 54% |
 
 ---
 
-## 現有策略概況
+## DXY 分析關鍵發現
 
-| ID | 策略名稱 | 版本 | 交易筆數 | 資料夾 |
-|----|---------|------|---------|--------|
-| S1 | AweWithBB | V3.4 | 600+ | XAUUSD-Long-S1-AweWithBB |
-| S2 | Hybrid | V2.0 | — | XAUUSD-Long-S2-Hybrid |
-| S3 | Pullback | V1.9 | — | XAUUSD-Long-S2-Pullback |
+**DXY × XAUUSD 30 日滾動相關係數平均：-0.467**（反向關係成立）
+
+| DXY RSI 區間 | S1 勝率 | S2-Hybrid 勝率 | S2-Pullback 勝率 |
+|---|---|---|---|
+| 超賣 < 30（USD 弱，黃金有利） | **60.9%** | **75.0%** | **66.7%** |
+| 中性 30–50 | 49.8% | 38.4% | 38.2% |
+| 中性 50–70 | 56.0% | 42.1% | 48.8% |
+| 超買 > 70（USD 強，黃金承壓） | 52.9% | 62.5%* | 44.4% |
+
+*S2-Hybrid overbought 樣本數僅 8 筆，不具代表性。
+
+**重要結論**：當 DXY RSI 處於超賣區（< 30）時，三個策略的勝率均顯著提升。
+可考慮加入「DXY RSI > 70 時暫停進場」的過濾條件。
 
 ---
 
-## 20 個實驗策略分組（experiments/strategies.py）
+## 20 策略實驗最新排名（基於 3 個月 30m 資料，2026-01-21 至 2026-04-27）
 
-| 組別 | 策略 | 說明 |
-|------|------|------|
-| Trend/Momentum | E01–E05 | EMA Cross, Triple EMA, MACD, Supertrend, ADX+EMA Dip |
-| Oscillator Bounces | E06–E10 | RSI Oversold, Stochastic Cross, CCI Bounce, Williams %R, RSI Divergence |
-| Bollinger Bands | E11–E13 | Lower Touch, Squeeze Break, Basis Walk |
-| Breakout | E14–E16 | Donchian Break, Inside Bar Break, ATR Vol Break |
-| Pattern/Confluence | E17–E20 | AO Saucer, Hammer, Bullish Engulfing, Multi-indicator Confluence |
+| 排名 | 策略 | 分組 | 交易筆 | 勝率 | 獲利因子 | 淨盈虧% | 得分 |
+|------|------|------|--------|------|---------|--------|------|
+| 1 | E03 MACD Signal | Momentum | 51 | 45.1% | 1.643 | +9.0% | 0.938 |
+| 2 | E12 BB Squeeze Break | BB | 88 | 39.8% | 1.337 | +8.8% | 0.864 |
+| 3 | E16 ATR Vol Break | Breakout | 99 | 36.4% | 1.124 | +3.9% | 0.743 |
+| 4 | E02 Triple EMA | Trend | 98 | 34.7% | 1.040 | +1.3% | 0.712 |
+| 5 | E15 Inside Bar Break | Breakout | 63 | 34.9% | 1.073 | +1.5% | 0.703 |
 
 ---
 
 ## 輸出產物
 
-- **`{策略資料夾}/report.html`** — 自含式 HTML（內嵌 base64 圖片），包含 13 種圖表
+- **`{策略資料夾}/report.html`** — 自含式 HTML（base64 圖片），含 DXY 分析段落
 - **`XAUUSD-Long-Experiments/report.html`** — 20 策略排名儀表板
-- **`XAUUSD-Long-Experiments/pine/E01_*.pine` … `E20_*.pine`** — 可直接貼入 TradingView 的 Pine Script v6
-
----
-
-## 資料限制與待改進方向
-
-1. **K 棒資料僅 3 天**（414 根 K 棒，2026-04-14 至 2026-04-16）
-   - `pre_entry.py` 的 Layer 2（BB%B, momentum 等 K 棒特徵）需要更長的歷史資料才能覆蓋到所有交易
-   - 可從 TradingView 匯出更長區間的 `FX_IDC_XAUUSD, 30.csv` 來改善覆蓋率
-
-2. **20 策略回測時間窗口與策略 CSV 不一致**
-   - 目前 20 策略回測用的是 FX_IDC_XAUUSD, 30.csv（僅 3 天）
-   - 建議匯出與策略 CSV 同樣時間範圍的 K 棒資料
-
-3. **可考慮加入的下一步**
-   - 在 20 策略中挑出 top-3，深入做 fail-pattern analysis
-   - 加入跨時間段的走向過濾（只在趨勢方向做多）
-   - 把 Pine Script 結果貼回 TradingView 驗證後，更新 report
+- **`XAUUSD-Long-Experiments/pine/*.pine`** — 20 個 Pine Script v6（可貼入 TradingView）
+- **`final_report.html`** — 根目錄整合報告（含 DXY 分析 + Next Action）
 
 ---
 
 ## 技術環境
 
-- Python 3.12
-- 套件：pandas, numpy, matplotlib, jupyter（見 requirements.txt）
+- Python 3.11（Windows 使用 `py -3.11`）
+- 套件：pandas, numpy, matplotlib（見 requirements.txt）
 - Pine Script v6（TradingView 使用）
 - 無外部 API、無環境變數需求
-
----
-
-## Git 歷史
-
-| Commit | 日期 | 說明 |
-|--------|------|------|
-| b1c4278 | 2026-04-27 | Initial commit：fail-pattern 分析框架 + 3 個策略 |
-| ebb74f7 | 2026-04-27 | 加入 20 策略實驗引擎 + HTML report + Pine Scripts |
