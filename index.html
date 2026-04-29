@@ -572,9 +572,130 @@
   </div>
 </div>
 
-<!-- ===== SECTION 7: Next Action ===== -->
+<!-- ===== SECTION 7: MTF Analysis ===== -->
 <div class="section">
-  <h2>7. Next Action — 優先行動計畫</h2>
+  <h2>7. 多時間框架（MTF）分析</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">
+    對每筆 30m 進場，往上查 60m / 4H / 1D 的 RSI 狀態（bullish = RSI > RSI-MA 且 RSI-MA 斜率上升；bearish = 兩者反轉；neutral = 混合）。
+    評估「反趨勢做多」對勝率的影響。數據來源：2024-05 起的 4H K 棒（三策略覆蓋率 90%+）、2014 起的 1D K 棒（覆蓋率 100%）。
+  </p>
+
+  <!-- MTF 對齊分數 -->
+  <h3>7-A. HTF 對齊分數 vs 勝率（三策略）</h3>
+  <table style="margin-bottom:20px;">
+    <thead>
+      <tr>
+        <th>HTF 對齊</th>
+        <th>S1 勝率 (n)</th>
+        <th>S2-Hybrid 勝率 (n)</th>
+        <th>S2-Pullback 勝率 (n)</th>
+        <th>結論</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge red">0/3 None</span><br><small style="color:var(--muted)">三個 TF 均不看多</small></td>
+        <td style="color:var(--red)">43.2% (213)</td>
+        <td style="color:var(--red)">38.2% (123)</td>
+        <td style="color:var(--red)">35.9% (92)</td>
+        <td>明顯低於策略平均</td>
+      </tr>
+      <tr>
+        <td><span class="badge yellow">1/3 Weak</span><br><small style="color:var(--muted)">1 個 TF 看多</small></td>
+        <td style="color:var(--green)">58.0% (226)</td>
+        <td style="color:var(--green)">55.3% (38)</td>
+        <td style="color:var(--green)">56.5% (69)</td>
+        <td>三策略一致顯著提升 (+15-20%)</td>
+      </tr>
+      <tr>
+        <td><span class="badge green">2/3 Moderate</span><br><small style="color:var(--muted)">2 個 TF 看多</small></td>
+        <td style="color:var(--green)"><strong>69.4%</strong> (62)</td>
+        <td style="color:var(--muted)">— (小樣本)</td>
+        <td style="color:var(--yellow)">44.1% (34)</td>
+        <td>S1 效果最強，S2-Pullback 平穩</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="insight-box success" style="margin-bottom:20px;">
+    <strong>核心發現：HTF 對齊分數 ≥ 1 是三策略共用的最強過濾條件</strong><br>
+    將「所有 3 個高時間框架均看空（alignment=0）」時的進場過濾掉，可把 S1 勝率從基準 53% 提升至 ≥ 58%，
+    而 S2 兩策略的 alignment=0 進場勝率僅 38–35%，遠低於策略整體。
+    這個過濾條件可直接在 Pine Script 中實作（4H + 1D RSI vs RSI-MA 狀態雙確認）。
+  </div>
+
+  <!-- 4H 狀態分析 -->
+  <h3>7-B. 4H RSI 狀態 vs 進場勝率</h3>
+  <table style="margin-bottom:20px;">
+    <thead>
+      <tr>
+        <th>4H 狀態</th>
+        <th>S1 勝率 (n)</th>
+        <th>S2-Hybrid 勝率 (n)</th>
+        <th>S2-Pullback 勝率 (n)</th>
+        <th>主要 Fail 類型 (S1)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge green">bullish</span></td>
+        <td style="color:var(--green)"><strong>64.0%</strong> (136)</td>
+        <td style="color:var(--green)">75.0% (4)</td>
+        <td>45.9% (61)</td>
+        <td>normal_sl 53.1%</td>
+      </tr>
+      <tr>
+        <td><span class="badge yellow">neutral</span></td>
+        <td>48.1% (104)</td>
+        <td style="color:var(--yellow)">53.6% (28)</td>
+        <td>42.9% (42)</td>
+        <td>normal_sl 57.4%</td>
+      </tr>
+      <tr>
+        <td><span class="badge red">bearish</span></td>
+        <td style="color:var(--red)">47.9% (215)</td>
+        <td style="color:var(--red)">38.7% (119)</td>
+        <td>42.3% (78)</td>
+        <td><span class="badge red">immediate_loss 41.1%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="insight-box warn">
+      <strong>S1 在 4H 空頭時 immediate_loss 激增</strong><br>
+      當 4H RSI 狀態為 bearish，S1 的 immediate_loss 佔損失的 41.1%（vs 4H bullish 時 22.4%）。
+      這說明在 4H 空頭趨勢中，S1 的進場信號大多是「假反彈」——進場後價格立即繼續下行。
+    </div>
+    <div class="insight-box warn">
+      <strong>S2-Hybrid：4H 空頭 + time_bleed 死亡組合</strong><br>
+      S2-Hybrid 在 4H bearish 環境中，46.6% 的虧損是 time_bleed（反趨勢持倉，等待不可能的反轉）。
+      119 筆 4H 空頭進場只有 38.7% 勝率——這是 S2 最大問題的根源。
+    </div>
+  </div>
+
+  <!-- 4H RSI Bucket -->
+  <h3>7-C. 4H RSI 數值段 vs 勝率（S1，n=455）</h3>
+  <table style="margin-bottom:16px;">
+    <thead><tr><th>4H RSI 區間</th><th>交易數</th><th>勝率</th><th>平均盈虧</th><th>解讀</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge red">超賣 &lt; 30</span></td><td>7</td><td style="color:var(--red)">28.6%</td><td style="color:var(--red)">−$3.61</td><td>4H 超賣不代表立即反彈 — 樣本小但危險</td></tr>
+      <tr><td><span class="badge yellow">低位 30–50</span></td><td>186</td><td>49.5%</td><td>$5.56</td><td>中性偏弱，接近盈虧平衡</td></tr>
+      <tr><td><span class="badge blue">中位 50–70</span></td><td>231</td><td>54.5%</td><td>$15.99</td><td>最多交易的正常區間</td></tr>
+      <tr><td><span class="badge green">超買 &gt; 70</span></td><td>31</td><td style="color:var(--green)"><strong>64.5%</strong></td><td style="color:var(--green)">$23.29</td><td>強趨勢延續 — 對多單最有利</td></tr>
+    </tbody>
+  </table>
+  <div class="insight-box" style="margin-bottom:0;">
+    <strong>反直覺發現：4H RSI 超買不是做多的障礙，而是順風期</strong><br>
+    傳統分析認為「RSI 超買應空」，但黃金在強勢上漲期間（4H RSI > 70），
+    S1 的長線多單勝率達 64.5%，平均盈虧 $23.29。這反映了 XAUUSD 的趨勢延續特性——
+    超買可能意味著動能持續，而非即將反轉。
+  </div>
+</div>
+
+<!-- ===== SECTION 8: Next Action ===== -->
+<div class="section">
+  <h2>8. Next Action — 優先行動計畫</h2>
 
   <div style="margin-bottom:20px;">
     <h3 style="color:var(--red)">緊急優先（本週）</h3>
@@ -582,15 +703,27 @@
       <li>
         <div class="todo-num urgent">1</div>
         <div class="todo-content">
-          <div class="title"><span class="tag optimize">優化</span> S2-Hybrid / S2-Pullback：加入時間止損（48 bars = 24 小時）</div>
+          <div class="title"><span class="tag optimize">MTF 過濾</span> 加入 HTF 對齊過濾：禁止 alignment=0 時進場（4H + 1D 均看空）</div>
           <div class="desc">
-            超過 50% 的虧損是 time_bleed（持倉太久）。在 Pine Script 中加入時間強制出場條件。<br>
-            S2-Hybrid 平均持倉 140 bars，S2-Pullback 135 bars，都遠超合理範圍。
+            <strong>最高優先的新發現。</strong> 三策略在 alignment=0 時勝率均低於平均（S1 43.2%、S2-Hybrid 38.2%、S2-Pullback 35.9%）。<br>
+            在 Pine Script 中加入條件：4H RSI > 4H RSI-MA <em>或</em> 1D RSI > 1D RSI-MA 才允許進場。<br>
+            預期效果：過濾掉 ~42% 的 S1 進場（213 筆），但剩餘勝率從 53% 升至 58%+。
           </div>
         </div>
       </li>
       <li>
         <div class="todo-num urgent">2</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag optimize">優化</span> S2-Hybrid / S2-Pullback：加入時間止損（48 bars = 24 小時）</div>
+          <div class="desc">
+            超過 50% 的虧損是 time_bleed（持倉太久）。在 Pine Script 中加入時間強制出場條件。<br>
+            S2-Hybrid 平均持倉 140 bars，S2-Pullback 135 bars，都遠超合理範圍。<br>
+            MTF 分析補充：S2-Hybrid 在 4H 空頭時，46.6% 的虧損是 time_bleed → 4H 空頭 + 持倉超時是死亡組合。
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num urgent">3</div>
         <div class="todo-content">
           <div class="title"><span class="tag strategy">策略</span> S2-Hybrid 停用歐盤，S2-Pullback 停用亞盤</div>
           <div class="desc">
@@ -606,7 +739,17 @@
     <h3 style="color:var(--yellow)">中優先（本月）</h3>
     <ul class="todo-list">
       <li>
-        <div class="todo-num medium">3</div>
+        <div class="todo-num medium">4</div>
+        <div class="todo-content">
+          <div class="title"><span class="tag optimize">MTF 優化</span> S1 加分條件：HTF alignment ≥ 2 時加大倉位</div>
+          <div class="desc">
+            S1 在 alignment=2/3 時勝率達 69.4%（n=62）。這個市場環境下可用 1.5–2× 倉位。<br>
+            組合策略：alignment=0 禁止進場 → alignment=1 正常倉位 → alignment≥2 加碼。
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="todo-num medium">5</div>
         <div class="todo-content">
           <div class="title"><span class="tag dxy">DXY</span> 測試 DXY RSI 30–50 時縮減 S2 倉位或暫停進場</div>
           <div class="desc">
@@ -616,22 +759,22 @@
         </div>
       </li>
       <li>
-        <div class="todo-num medium">4</div>
+        <div class="todo-num medium">6</div>
         <div class="todo-content">
           <div class="title"><span class="tag optimize">優化</span> S1-AweWithBB：分析 Hour 9 / Hour 14 的 immediate_loss 集中原因</div>
           <div class="desc">
-            S1 的 immediate_loss 在 Hour 9（12.3%）和 Hour 14（8.2%）過度集中（全體交易比例分別是 7.5% / 4.6%）。<br>
-            查看這些時段的市場特徵（是否為重要數據發布時間），考慮加入進場過濾。
+            S1 的 immediate_loss 在 Hour 9（12.3%）和 Hour 14（8.2%）過度集中。<br>
+            MTF 補充：這些 immediate_loss 是否集中在 4H bearish 環境？若是，用 MTF 過濾即可解決，不需單獨處理。
           </div>
         </div>
       </li>
       <li>
-        <div class="todo-num medium">5</div>
+        <div class="todo-num medium">7</div>
         <div class="todo-content">
-          <div class="title"><span class="tag validate">驗證</span> 在 TradingView 驗證實驗 top-3（E03, E12, E16）</div>
+          <div class="title"><span class="tag validate">驗證</span> 在 TradingView 驗證實驗 top-3（E03, E12, E19）</div>
           <div class="desc">
-            Pine Scripts 已生成於 XAUUSD-Long-Experiments/pine/。貼入 TradingView 後，設定更長回測範圍（建議 2 年以上）驗證排名是否穩定。<br>
-            E03 MACD Signal 和 E12 BB Squeeze 是最優先驗證的候選。
+            Pine Scripts 已生成於 XAUUSD-Long-Experiments/pine/ 和 XAUUSD-Short-Experiments/pine/（含合併選擇器）。<br>
+            E03 MACD Signal（多單 #1）、E19 Bullish Engulf（多單 #1 候選）、S19 Bearish Engulf（空單 #1）是最優先驗證目標。
           </div>
         </div>
       </li>
@@ -642,54 +785,55 @@
     <h3 style="color:var(--muted)">低優先（長期）</h3>
     <ul class="todo-list">
       <li>
-        <div class="todo-num low">6</div>
+        <div class="todo-num low">8</div>
         <div class="todo-content">
           <div class="title"><span class="tag dxy">DXY</span> 加入 DXY RSI 超賣（&lt; 30）作為 S1 加碼條件</div>
-          <div class="desc">當 DXY RSI &lt; 30 時，S1 勝率從 53.2% 跳升到 60.9%，平均盈虧從 $12 升到 $26.5。可在此環境下加大倉位。</div>
+          <div class="desc">當 DXY RSI &lt; 30 時，S1 勝率從 53.2% 跳升到 60.9%，平均盈虧從 $12 升到 $26.5。可與 HTF alignment≥2 結合為最強加碼訊號。</div>
         </div>
       </li>
       <li>
-        <div class="todo-num low">7</div>
+        <div class="todo-num low">9</div>
         <div class="todo-content">
           <div class="title"><span class="tag strategy">策略</span> 探索 S1 + S2 組合策略</div>
           <div class="desc">S1 提供高頻穩定現金流（低回撤），S2 提供大波段獲利（高盈虧比）。考慮按資金比例分配，或以 S1 訊號作為 S2 的進場確認。</div>
         </div>
       </li>
       <li>
-        <div class="todo-num low">8</div>
+        <div class="todo-num low">10</div>
         <div class="todo-content">
-          <div class="title"><span class="tag data">資料</span> 補充 240m / 1D XAUUSD 作為趨勢過濾器</div>
-          <div class="desc">資料已有（csv/FX_IDC_XAUUSD, 240.csv 覆蓋 2024-05 起）。可在 pre_entry.py 加入 4H 趨勢判斷，只在 4H 趨勢向上時做多，過濾逆勢交易。</div>
+          <div class="title"><span class="tag data">資料</span> 補充 60m 歷史資料以提升 MTF 覆蓋率</div>
+          <div class="desc">目前 60m 覆蓋率僅 28–35%（2025-10 起）。從 TradingView 匯出更早的 60m CSV 可讓 60m 信號成為完整的三層 MTF 系統。</div>
         </div>
       </li>
     </ul>
   </div>
 </div>
 
-<!-- ===== SECTION 8: 摘要 ===== -->
+<!-- ===== SECTION 9: 摘要 ===== -->
 <div class="section">
-  <h2>8. 執行摘要</h2>
+  <h2>9. 執行摘要</h2>
   <div class="grid-3">
     <div class="insight-box success">
       <div class="head">✓ 三策略均長期盈利</div>
       S1 +$6,137 / S2-Hybrid +$6,212 / S2-Pullback +$7,722<br>
-      回測期 2024-01 至 2026-04（28 個月），但回撤控制差距大。
+      回測期 2024-01 至 2026-04（28 個月）。
     </div>
     <div class="insight-box warn">
-      <div class="head">⚠ 最緊迫：加時間止損</div>
-      S2 兩個策略 >50% 虧損來自「拖太久」，加入 48 bars 強制出場是成本最低、效益最高的改動。
+      <div class="head">⚠ 最緊迫：HTF 對齊過濾</div>
+      三策略在 alignment=0（全部 TF 看空）時進場，勝率均低於整體均值 6–9%。<br>
+      加上時間止損（S2）是第二優先。
     </div>
     <div class="insight-box dxy">
-      <div class="head">DXY 關鍵結論</div>
-      DXY RSI &lt; 30 = 三個策略勝率全部顯著提升（+7–33%）。<br>
-      DXY RSI 30–50 = S2 勝率最差，考慮停手。<br>
-      相關係數 -0.467，反向關係穩定。
+      <div class="head">MTF 最強訊號</div>
+      S1 在 HTF alignment=2 時勝率 69.4%（vs 整體 53.2%）。<br>
+      S1 在 4H RSI 超買（>70）時勝率 64.5%（反直覺：強趨勢延續）。<br>
+      4H RSI 超賣（&lt;30）= 三策略最危險的做多時機。
     </div>
   </div>
 </div>
 
 <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
-  Generated by Claude Code &nbsp;|&nbsp; XAUUSD Long + Short Analysis Toolkit &nbsp;|&nbsp; 2026-04-27
+  Generated by Claude Code &nbsp;|&nbsp; XAUUSD Long + Short Analysis Toolkit &nbsp;|&nbsp; 2026-04-29
 </div>
 
 </body>

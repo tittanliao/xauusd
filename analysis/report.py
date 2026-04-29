@@ -88,6 +88,8 @@ def generate(
     out_path: Path,
     dxy_stats: dict | None = None,
     corr_df: pd.DataFrame | None = None,
+    htf_enriched: pd.DataFrame | None = None,
+    htf_stats_out: dict | None = None,
 ) -> None:
     """
     Renders and writes a self-contained HTML report to out_path.
@@ -210,6 +212,63 @@ def generate(
         {corr_html}
         """
 
+    # ---- MTF section ----
+    mtf_html = ""
+    if htf_stats_out and htf_enriched is not None and not htf_enriched.empty:
+        align_b64   = _fig_to_b64(charts.htf_alignment_bar(htf_stats_out, strategy_id))
+        state4h_b64 = _fig_to_b64(charts.htf_4h_state_bar(htf_stats_out, strategy_id))
+        bucket_b64  = _fig_to_b64(charts.htf_bucket_heatmap(htf_stats_out, strategy_id))
+
+        cov_html = ""
+        if "coverage" in htf_stats_out and not htf_stats_out["coverage"].empty:
+            cov_html = "<b>Data coverage:</b><br>" + _table(htf_stats_out["coverage"])
+
+        def _tbl_or_empty(key, label):
+            df = htf_stats_out.get(key)
+            if df is None or df.empty:
+                return ""
+            return f"<b>{label}</b><br>" + _table(df) + "<br>"
+
+        conflict_note = ""
+        ct = htf_stats_out.get("by_conflict")
+        if ct is not None and not ct.empty and "counter-trend (4H bearish)" in ct.index:
+            ct_row = ct.loc["counter-trend (4H bearish)"]
+            al_row = ct.loc["aligned (4H not bearish)"] if "aligned (4H not bearish)" in ct.index else None
+            if al_row is not None:
+                diff = ct_row["win_rate"] - al_row["win_rate"]
+                sign = "lower" if diff < 0 else "higher"
+                conflict_note = (
+                    f'<div class="note">⚠️ Counter-trend entries (4H bearish) have a '
+                    f'<b>{abs(diff)*100:.1f}% {sign}</b> win rate than aligned entries '
+                    f'({ct_row["win_rate"]*100:.1f}% vs {al_row["win_rate"]*100:.1f}%). '
+                    f'Consider filtering out entries when 4H RSI is in a bearish state.</div>'
+                )
+
+        mtf_html = f"""
+        <h2>Multi-Timeframe (MTF) Analysis</h2>
+        <div class="card">
+          <p style="color:#7f8c8d;font-size:.9em;">
+            Each 30m entry is tagged with the nearest higher-timeframe (60m, 4H, 1D) RSI context.
+            <b>State definition:</b> bullish = RSI &gt; RSI-MA <em>and</em> RSI-MA slope rising;
+            bearish = RSI &lt; RSI-MA <em>and</em> RSI-MA slope falling; neutral = mixed signals.
+          </p>
+          {cov_html}
+          <br>
+          {_img_tag(align_b64, "HTF Alignment")}
+          {_img_tag(state4h_b64, "4H State")}
+          {_img_tag(bucket_b64, "4H RSI Bucket")}
+          {conflict_note}
+          <br>
+          {_tbl_or_empty("by_alignment",  "Win Rate by HTF Alignment Score")}
+          {_tbl_or_empty("by_4h_state",   "Win Rate by 4H RSI State")}
+          {_tbl_or_empty("by_4h_bucket",  "Win Rate by 4H RSI Bucket")}
+          {_tbl_or_empty("by_1d_state",   "Win Rate by 1D RSI State")}
+          {_tbl_or_empty("by_conflict",   "Win Rate: Counter-Trend vs Aligned")}
+          {_tbl_or_empty("by_vol_regime", "Win Rate: High-Vol vs Normal")}
+          {_tbl_or_empty("fail_by_4h",    "Fail Type Distribution by 4H State (% of losses)")}
+        </div>
+        """
+
     # ---- Assemble HTML ----
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -267,6 +326,8 @@ def generate(
   {pre_entry_charts_html}
 
   {dxy_html}
+
+  {mtf_html}
 
   <footer>XAUUSD Strategy Fail-Pattern Toolkit &nbsp;·&nbsp; {generated_at}</footer>
 </div>

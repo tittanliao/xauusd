@@ -30,9 +30,11 @@ STRATEGIES = [
     },
 ]
 
-PRICE_CSV    = CSV_DIR / "FX_IDC_XAUUSD, 30.csv"
-DXY_CSV_30   = CSV_DIR / "TVC_DXY, 30.csv"
-DXY_CSV_1D   = CSV_DIR / "TVC_DXY, 1D.csv"
+PRICE_CSV     = CSV_DIR / "FX_IDC_XAUUSD, 30.csv"
+PRICE_CSV_60M = CSV_DIR / "FX_IDC_XAUUSD, 60.csv"
+PRICE_CSV_4H  = CSV_DIR / "FX_IDC_XAUUSD, 240.csv"
+DXY_CSV_30    = CSV_DIR / "TVC_DXY, 30.csv"
+DXY_CSV_1D    = CSV_DIR / "TVC_DXY, 1D.csv"
 XAUUSD_CSV_1D = CSV_DIR / "FX_IDC_XAUUSD, 1D.csv"
 
 # --- Fail pattern classification thresholds ---

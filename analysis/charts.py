@@ -407,3 +407,124 @@ def dxy_correlation_chart(corr_df: pd.DataFrame, title: str = "") -> plt.Figure:
 
     fig.tight_layout()
     return fig
+
+
+# ---------------------------------------------------------------------------
+# Multi-Timeframe (MTF) charts
+# ---------------------------------------------------------------------------
+
+_HTF_STATE_COLORS = {
+    "bullish":  "#27ae60",
+    "neutral":  "#f39c12",
+    "bearish":  "#e74c3c",
+    "unknown":  "#bdc3c7",
+}
+_ALIGN_COLORS = ["#e74c3c", "#e67e22", "#3498db", "#27ae60"]
+
+
+def htf_alignment_bar(stats: dict, title: str = "") -> plt.Figure:
+    """Bar chart: win rate by HTF alignment score."""
+    df = stats.get("by_alignment")
+    if df is None or df.empty:
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.text(0.5, 0.5, "No HTF data available", ha="center", transform=ax.transAxes)
+        return fig
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    labels    = [str(l) for l in df.index]
+    win_rates = df["win_rate"] * 100
+    totals    = df["total"]
+    colors    = (_ALIGN_COLORS + _ALIGN_COLORS)[: len(labels)]
+
+    bars = ax.bar(labels, win_rates, color=colors, edgecolor="white", linewidth=0.8)
+    ax.axhline(50, color="gray", linestyle="--", linewidth=0.8, alpha=0.6)
+
+    for bar, n, wr in zip(bars, totals, win_rates):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.2,
+                f"n={n}\n{wr:.1f}%", ha="center", va="bottom", fontsize=8)
+
+    ax.set_xlabel("HTF Alignment (number of aligned timeframes)")
+    ax.set_ylabel("Win Rate %")
+    ax.set_title(f"Win Rate by HTF Alignment — {title}")
+    ax.set_ylim(0, 110)
+    fig.tight_layout()
+    return fig
+
+
+def htf_4h_state_bar(stats: dict, title: str = "") -> plt.Figure:
+    """Grouped chart: win rate by 4H RSI state + fail type breakdown."""
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+
+    # Left: win rate by 4H state
+    df_state = stats.get("by_4h_state")
+    ax = axes[0]
+    if df_state is not None and not df_state.empty:
+        ordered = [s for s in ["bearish", "neutral", "bullish"] if s in df_state.index]
+        df_plot = df_state.loc[ordered]
+        colors  = [_HTF_STATE_COLORS[s] for s in ordered]
+        bars    = ax.bar(ordered, df_plot["win_rate"] * 100, color=colors,
+                         edgecolor="white", linewidth=0.8)
+        ax.axhline(50, color="gray", linestyle="--", linewidth=0.8, alpha=0.6)
+        for bar, (state, row) in zip(bars, df_plot.iterrows()):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.2,
+                    f"n={int(row['total'])}\n{row['win_rate']*100:.1f}%",
+                    ha="center", va="bottom", fontsize=8)
+    ax.set_title(f"Win Rate by 4H RSI State — {title}")
+    ax.set_ylabel("Win Rate %")
+    ax.set_ylim(0, 110)
+
+    # Right: fail type % by 4H state (stacked bar)
+    df_fail = stats.get("fail_by_4h")
+    ax2 = axes[1]
+    if df_fail is not None and not df_fail.empty:
+        states    = [s for s in ["bearish", "neutral", "bullish"] if s in df_fail.index]
+        fail_cols = [c for c in df_fail.columns if c in FAIL_COLORS]
+        bottom    = np.zeros(len(states))
+        for fc in fail_cols:
+            vals = [df_fail.loc[s, fc] * 100 if s in df_fail.index and fc in df_fail.columns else 0
+                    for s in states]
+            ax2.bar(states, vals, bottom=bottom, label=fc,
+                    color=FAIL_COLORS[fc], edgecolor="white", linewidth=0.5)
+            bottom += np.array(vals)
+        ax2.set_title(f"Fail Type % by 4H State — {title}")
+        ax2.set_ylabel("% of Losses")
+        ax2.legend(fontsize=8, loc="upper right")
+        ax2.set_ylim(0, 115)
+    else:
+        ax2.text(0.5, 0.5, "Insufficient loss data", ha="center", transform=ax2.transAxes)
+        ax2.set_title("Fail Type % by 4H State")
+
+    fig.tight_layout()
+    return fig
+
+
+def htf_bucket_heatmap(stats: dict, title: str = "") -> plt.Figure:
+    """Heatmap: win rate by 4H RSI bucket."""
+    df = stats.get("by_4h_bucket")
+    if df is None or df.empty:
+        fig, ax = plt.subplots(figsize=(8, 3))
+        ax.text(0.5, 0.5, "No 4H data available", ha="center", transform=ax.transAxes)
+        return fig
+
+    bucket_order = ["oversold(<30)", "low(30-50)", "high(50-70)", "overbought(>70)"]
+    df_plot = df.reindex([b for b in bucket_order if b in df.index])
+
+    fig, ax = plt.subplots(figsize=(10, 3))
+    wr     = df_plot["win_rate"].values.astype(float)
+    totals = df_plot["total"].values.astype(int)
+    labels = list(df_plot.index)
+
+    im = ax.imshow([wr], cmap="RdYlGn", vmin=0.3, vmax=0.7, aspect="auto")
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=15, ha="right")
+    ax.set_yticks([])
+
+    for i, (w, n) in enumerate(zip(wr, totals)):
+        ax.text(i, 0, f"{w*100:.1f}%\nn={n}", ha="center", va="center",
+                fontsize=10, fontweight="bold",
+                color="white" if (w < 0.38 or w > 0.62) else "black")
+
+    plt.colorbar(im, ax=ax, fraction=0.03, pad=0.04, label="Win Rate")
+    ax.set_title(f"Win Rate by 4H RSI Bucket — {title}")
+    fig.tight_layout()
+    return fig

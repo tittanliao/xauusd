@@ -17,21 +17,32 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
 
-from analysis.config import STRATEGIES, PRICE_CSV, DXY_CSV_1D, DXY_CSV_30, XAUUSD_CSV_1D
-from analysis import loader, metrics, fail_patterns, pre_entry, charts, report, dxy_analysis
+from analysis.config import (
+    STRATEGIES, PRICE_CSV, PRICE_CSV_60M, PRICE_CSV_4H,
+    DXY_CSV_1D, DXY_CSV_30, XAUUSD_CSV_1D,
+)
+from analysis import loader, metrics, fail_patterns, pre_entry, charts, report, dxy_analysis, mtf_analysis
 
 REPORTS = Path(__file__).parent / "reports"
 
 
-def _load_dxy_data():
-    """Load DXY 1D and 30m data; returns (dxy_1d, dxy_30, xauusd_1d)."""
-    dxy_1d   = loader.load_dxy(DXY_CSV_1D)   if DXY_CSV_1D.exists()   else None
-    dxy_30   = loader.load_dxy(DXY_CSV_30)   if DXY_CSV_30.exists()   else None
-    xau_1d   = loader.load_price(XAUUSD_CSV_1D) if XAUUSD_CSV_1D.exists() else None
-    return dxy_1d, dxy_30, xau_1d
+def _load_all_data():
+    """Load all price and DXY data; returns a data dict."""
+    return {
+        "dxy_1d":   loader.load_dxy(DXY_CSV_1D)       if DXY_CSV_1D.exists()    else None,
+        "dxy_30":   loader.load_dxy(DXY_CSV_30)       if DXY_CSV_30.exists()    else None,
+        "xau_1d":   loader.load_price(XAUUSD_CSV_1D)  if XAUUSD_CSV_1D.exists() else None,
+        "xau_60m":  loader.load_price(PRICE_CSV_60M)  if PRICE_CSV_60M.exists() else None,
+        "xau_4h":   loader.load_price(PRICE_CSV_4H)   if PRICE_CSV_4H.exists()  else None,
+    }
 
 
-def run_strategy(cfg: dict, dxy_1d=None, dxy_30=None, xauusd_1d=None) -> None:
+def run_strategy(cfg: dict, data: dict | None = None) -> None:
+    dxy_1d    = (data or {}).get("dxy_1d")
+    dxy_30    = (data or {}).get("dxy_30")
+    xauusd_1d = (data or {}).get("xau_1d")
+    xau_60m   = (data or {}).get("xau_60m")
+    xau_4h    = (data or {}).get("xau_4h")
     name    = cfg["id"]
     version = cfg["version"]
     csv_path = cfg["folder"] / cfg["trades_csv"]
@@ -87,6 +98,36 @@ def run_strategy(cfg: dict, dxy_1d=None, dxy_30=None, xauusd_1d=None) -> None:
                     "prev_1_dir", "prev_3_green", "momentum_3"]
             print(enriched.dropna(subset=["rsi"])[cols].to_string())
 
+    # ── Multi-Timeframe analysis ──────────────────────────────────
+    htf_enriched_out, htf_stats_result = None, None
+    if xau_4h is not None or xauusd_1d is not None:
+        print(f"\n  --- Multi-Timeframe Analysis ---")
+        trades_with_fail = trades.merge(
+            classified[["trade_id", "fail_type"]], on="trade_id", how="left"
+        )
+        htf_enriched_out = mtf_analysis.enrich_trades_with_htf(
+            trades_with_fail,
+            price_60m=xau_60m,
+            price_4h=xau_4h,
+            price_1d=xauusd_1d,
+        )
+        htf_stats_result = mtf_analysis.htf_stats(htf_enriched_out)
+
+        if "coverage" in htf_stats_result:
+            print(htf_stats_result["coverage"].to_string())
+        if "by_alignment" in htf_stats_result and not htf_stats_result["by_alignment"].empty:
+            print(f"\n  Win Rate by HTF Alignment:")
+            print(htf_stats_result["by_alignment"].to_string())
+        if "by_4h_state" in htf_stats_result and not htf_stats_result["by_4h_state"].empty:
+            print(f"\n  Win Rate by 4H State:")
+            print(htf_stats_result["by_4h_state"].to_string())
+        if "by_4h_bucket" in htf_stats_result and not htf_stats_result["by_4h_bucket"].empty:
+            print(f"\n  Win Rate by 4H RSI Bucket:")
+            print(htf_stats_result["by_4h_bucket"].to_string())
+        if "fail_by_4h" in htf_stats_result and not htf_stats_result["fail_by_4h"].empty:
+            print(f"\n  Fail Type % by 4H State:")
+            print(htf_stats_result["fail_by_4h"].to_string())
+
     # ── DXY analysis ──────────────────────────────────────────────
     dxy_stats_out, corr_df_out = None, None
     if dxy_1d is not None:
@@ -104,6 +145,15 @@ def run_strategy(cfg: dict, dxy_1d=None, dxy_30=None, xauusd_1d=None) -> None:
     # ── PNG charts (reference folder) ────────────────────────────
     out_dir = REPORTS / name
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    if htf_stats_result:
+        for fname, fig in [
+            ("htf_alignment.png",  charts.htf_alignment_bar(htf_stats_result, name)),
+            ("htf_4h_state.png",   charts.htf_4h_state_bar(htf_stats_result, name)),
+            ("htf_4h_bucket.png",  charts.htf_bucket_heatmap(htf_stats_result, name)),
+        ]:
+            fig.savefig(out_dir / fname, dpi=150, bbox_inches="tight")
+            import matplotlib.pyplot as plt; plt.close(fig)
 
     png_jobs = [
         ("equity_curve.png",    charts.equity_curve(trades, name)),
@@ -142,6 +192,8 @@ def run_strategy(cfg: dict, dxy_1d=None, dxy_30=None, xauusd_1d=None) -> None:
         out_path=html_path,
         dxy_stats=dxy_stats_out,
         corr_df=corr_df_out,
+        htf_enriched=htf_enriched_out,
+        htf_stats_out=htf_stats_result,
     )
 
 
@@ -156,17 +208,17 @@ def main() -> None:
         print(f"No match. Available: {available}")
         sys.exit(1)
 
-    dxy_1d, dxy_30, xauusd_1d = _load_dxy_data()
-    if dxy_1d is not None:
-        print(f"[DXY] 1D data: {len(dxy_1d)} bars "
-              f"({dxy_1d['time'].min().date()} → {dxy_1d['time'].max().date()})")
-    if dxy_30 is not None:
-        print(f"[DXY] 30m data: {len(dxy_30)} bars "
-              f"({dxy_30['time'].min().date()} → {dxy_30['time'].max().date()})")
+    data = _load_all_data()
+    for label, key in [("DXY 1D", "dxy_1d"), ("DXY 30m", "dxy_30"),
+                        ("XAUUSD 1D", "xau_1d"), ("XAUUSD 60m", "xau_60m"), ("XAUUSD 4H", "xau_4h")]:
+        df = data.get(key)
+        if df is not None:
+            print(f"[{label}] {len(df)} bars  "
+                  f"({df['time'].min().date()} → {df['time'].max().date()})")
 
     for cfg in strategies:
         try:
-            run_strategy(cfg, dxy_1d=dxy_1d, dxy_30=dxy_30, xauusd_1d=xauusd_1d)
+            run_strategy(cfg, data=data)
         except FileNotFoundError as exc:
             print(f"[SKIP] {cfg['id']}: {exc}", file=sys.stderr)
 

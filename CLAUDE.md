@@ -37,8 +37,9 @@ xauusd/
 │   ├── fail_patterns.py    # 虧損分類邏輯（核心）
 │   ├── pre_entry.py        # 進場前情境分析（交易資料 + K 棒 RSI 特徵）
 │   ├── dxy_analysis.py     # DXY 相關性分析
-│   ├── charts.py           # matplotlib 圖表（含 DXY 圖）
-│   └── report.py           # 自含式 HTML 報告生成器（含 DXY 段落）
+│   ├── mtf_analysis.py     # 多時間框架（MTF）共軌分析（60m/4H/1D）
+│   ├── charts.py           # matplotlib 圖表（含 DXY + MTF 圖）
+│   └── report.py           # 自含式 HTML 報告生成器（含 DXY + MTF 段落）
 │
 ├── experiments/            # 策略回測引擎（多單 + 空單共用）
 │   ├── engine.py           # run_backtest()（多單）+ run_backtest_short()（空單）
@@ -65,13 +66,15 @@ xauusd/
 ├── main.py                 # Fail-pattern 分析入口
 ├── run_experiments.py      # 多單 20 策略實驗入口
 ├── run_short_experiments.py # 空單 20 策略實驗入口
-├── index.html              # 整合報告（多空 + DXY + Next Action）
+├── index.html              # 整合報告（多空 + DXY + MTF + Next Action）
 │
 ├── XAUUSD-Long-S1-AweWithBB/    # S1 策略：交易 CSV + report.html + Pine script
 ├── XAUUSD-Long-S2-Hybrid/       # S2 策略
 ├── XAUUSD-Long-S2-Pullback/     # S3 策略（資料夾名帶 Pullback）
 ├── XAUUSD-Long-Experiments/     # 多單實驗：report.html + pine/（20 files）
-└── XAUUSD-Short-Experiments/    # 空單實驗：report.html + pine/（20 files）
+├── XAUUSD-Short-Experiments/    # 空單實驗：report.html + pine/（20 files）
+└── XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine   # 合併 E01–E20（下拉選單）
+    XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine # 合併 S01–S20（下拉選單）
 ```
 
 ---
@@ -112,6 +115,19 @@ Regular Bullish, Regular Bullish Label, Regular Bearish, Regular Bearish Label
 
 每筆交易新增 DXY 情境欄位（用 1D DXY，覆蓋全部 2 年歷史）：
 - `dxy_rsi_1d`、`dxy_trend_1d`、`dxy_rsi_vs_ma`、`dxy_rsi_bucket`
+
+### 多時間框架分析（analysis/mtf_analysis.py）
+
+每筆交易新增 60m / 4H / 1D 情境欄位（使用 `pd.merge_asof` O(n log n) 查找）：
+- `htf_60m_rsi_state`、`htf_4h_rsi_state`、`htf_1d_rsi_state`：`bullish/bearish/neutral`
+- `htf_60m_rsi_bucket`、`htf_4h_rsi_bucket`：`oversold(<30)/low(30-50)/high(50-70)/overbought(>70)`
+- `htf_4h_vol_ratio`：4H ATR / 20-bar ATR SMA（> 1.3 = 高波動）
+- `htf_alignment`：0–3（bullish 的時間框架數）
+- `htf_alignment_label`：`0/3 None`、`1/3 Weak`、`2/3 Moderate`、`3/3 Full`
+- `htf_conflict`：`htf_4h_rsi_state == "bearish"`（4H 逆向進場）
+- `htf_high_vol`：`htf_4h_vol_ratio > 1.3`
+
+**RSI 狀態判斷**：`bullish` = RSI > RSI-MA 且 RSI-MA 斜率正；`bearish` = 兩者都相反；`neutral` = 混合。
 
 ### 回測引擎規則（experiments/engine.py）
 
@@ -157,6 +173,40 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 
 ---
 
+## MTF 分析關鍵發現（2026-04-29）
+
+**資料涵蓋率**：60m 約 28–35%（僅 2025-10-15 起）；4H 約 90%+（2024-05-01 起）；1D 100%。
+
+### HTF Alignment（多時間框架共軌分數 0–3）
+
+| 共軌分數 | 說明 | S1 勝率 | S2-Hybrid 勝率 | S2-Pullback 勝率 |
+|---------|------|---------|----------------|-----------------|
+| 0/3 None | 無任何 TF 看多 | ~43% | ~38% | ~36% |
+| 1/3 Weak | 1 個 TF 看多 | ~50% | ~40% | ~42% |
+| 2/3 Moderate | 2 個 TF 看多 | ~57% | ~48% | ~50% |
+| 3/3 Full | 全部 TF 看多 | ~69% | ~60% | ~58% |
+
+**結論**：HTF 共軌分數越高，勝率越高。建議僅在 alignment ≥ 2 時進場。
+
+### 4H RSI 狀態與勝率
+
+| 4H 狀態 | S1 勝率 | S2-Hybrid 勝率 | S2-Pullback 勝率 |
+|---------|---------|----------------|-----------------|
+| bullish（RSI > RSI-MA 且斜率正） | ~59% | ~50% | ~52% |
+| neutral | ~51% | ~40% | ~42% |
+| bearish（RSI < RSI-MA 且斜率負） | ~44% | ~34% | ~33% |
+
+**主要 Fail Pattern**：
+- S1（AweWithBB）：4H bearish 時 `immediate_loss` 比例顯著升高（進場邏輯與大週期背離）
+- S2-Hybrid / S2-Pullback：4H bearish 時 `time_bleed` 比例升高（撐住太久才被掃出）
+
+### 合併 Pine Script（下拉選單版）
+
+- `XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine`：E01–E20 合併（`input.string` 下拉）
+- `XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine`：S01–S20 合併（空單版）
+
+---
+
 ## 多單實驗最新排名（3 個月 30m 資料，2026-01-21 至 2026-04-27）
 
 | 排名 | 策略 | 分組 | 交易筆 | 勝率 | 獲利因子 | 淨盈虧% |
@@ -179,12 +229,17 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 
 ## 輸出產物
 
-- **`{策略資料夾}/report.html`** — 自含式 HTML（base64 圖片），含 DXY 分析段落
+- **`{策略資料夾}/report.html`** — 自含式 HTML（base64 圖片），含 DXY + MTF 分析段落
+- **`reports/{id}/htf_alignment.png`** — HTF 共軌分數長條圖
+- **`reports/{id}/htf_4h_state.png`** — 4H RSI 狀態雙面板（勝率 + 失敗類型分佈）
+- **`reports/{id}/htf_4h_bucket.png`** — 4H RSI Bucket 熱力圖
 - **`XAUUSD-Long-Experiments/report.html`** — 多單 20 策略排名儀表板
 - **`XAUUSD-Long-Experiments/pine/*.pine`** — 20 個多單 Pine Script v6
+- **`XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine`** — E01–E20 合併下拉選單版
 - **`XAUUSD-Short-Experiments/report.html`** — 空單 20 策略排名儀表板
 - **`XAUUSD-Short-Experiments/pine/*.pine`** — 20 個空單 Pine Script v6
-- **`index.html`** — 根目錄整合報告（多空 + DXY + Next Action，含各子報告連結）
+- **`XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine`** — S01–S20 合併下拉選單版
+- **`index.html`** — 根目錄整合報告（多空 + DXY + MTF + Next Action，含各子報告連結）
 
 ---
 
