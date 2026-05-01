@@ -1,12 +1,12 @@
 """
-Entry point for the 20-strategy experiment.
+Entry point for the 20-strategy long experiment.
 
 Steps:
-    1. Load 30-min OHLCV price data
-    2. Run all 20 strategies via Python backtesting engine
+    1. Load 30-min price data + 4H HTF data
+    2. Run baseline backtests (no filter) + HTF-filtered backtests (skip 4H bearish)
     3. Score and rank strategies
-    4. Generate HTML report → XAUUSD-Long-Experiments/report.html
-    5. Generate Pine Script files → XAUUSD-Long-Experiments/pine/
+    4. Generate HTML report with MTF filter comparison
+    5. Generate Pine Script files
 
 Usage:
     python3.12 run_experiments.py
@@ -16,9 +16,11 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+import pandas as pd
 
-from analysis.config import PRICE_CSV
+from analysis.config import PRICE_CSV, PRICE_CSV_4H, XAUUSD_CSV_1D
 from analysis import loader
+from analysis.mtf_analysis import prepare_htf_filter
 from experiments import runner
 from experiments.report import generate as generate_html
 from experiments.pine_generator import generate_all as generate_pine
@@ -27,44 +29,92 @@ OUT_DIR  = Path(__file__).parent / "XAUUSD-Long-Experiments"
 HTML_OUT = OUT_DIR / "report.html"
 
 
+def _build_comparison(base: pd.DataFrame, filt: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for sid in base.index:
+        b, f = base.loc[sid], filt.loc[sid]
+        rows.append({
+            "strategy_id":       sid,
+            "win_rate_base":     b["win_rate"],
+            "win_rate_filtered": f["win_rate"],
+            "trades_base":       b["total"],
+            "trades_filtered":   f["total"],
+            "pf_base":           min(b["profit_factor"], 99),
+            "pf_filtered":       min(f["profit_factor"], 99),
+        })
+    return pd.DataFrame(rows).set_index("strategy_id")
+
+
 def main() -> None:
     print("=" * 60)
-    print("  XAUUSD 20-Strategy Experiment")
+    print("  XAUUSD 20-Strategy Long Experiment")
     print("=" * 60)
 
     # ── Load price data ───────────────────────────────────────────
-    print(f"\n[1/4] Loading price data from: {PRICE_CSV.name}")
+    print(f"\n[1/5] Loading price data...")
     price = loader.load_price(PRICE_CSV)
-    print(f"      {len(price)} bars  |  "
-          f"{price['time'].min().date()} → {price['time'].max().date()}")
+    print(f"      30m: {len(price)} bars  "
+          f"({price['time'].min().date()} → {price['time'].max().date()})")
 
     if len(price) < 60:
-        print("ERROR: Need at least 60 bars. Export more OHLCV data from TradingView.")
+        print("ERROR: Need at least 60 bars.")
         sys.exit(1)
 
-    # ── Run backtests ─────────────────────────────────────────────
-    print("\n[2/4] Running 20 strategy backtests...")
-    results, trades_map = runner.run_all(price)
-    scored = runner.score(results)
+    xau_4h  = loader.load_price(PRICE_CSV_4H)  if PRICE_CSV_4H.exists()  else None
+    xau_1d  = loader.load_price(XAUUSD_CSV_1D) if XAUUSD_CSV_1D.exists() else None
+    htf_filter = prepare_htf_filter(xau_4h) if xau_4h is not None else None
 
-    print("\n  --- Strategy Ranking ---")
+    if xau_4h is not None:
+        print(f"      4H : {len(xau_4h)} bars  "
+              f"({xau_4h['time'].min().date()} → {xau_4h['time'].max().date()})")
+    else:
+        print("      4H : not found — HTF filter disabled")
+
+    # ── Baseline backtests ────────────────────────────────────────
+    print("\n[2/5] Running baseline backtests (no HTF filter)...")
+    results_base, trades_map = runner.run_all(price)
+    scored = runner.score(results_base)
+
+    # ── HTF-filtered backtests ────────────────────────────────────
+    mtf_comparison = None
+    if htf_filter is not None:
+        print("\n[3/5] Running HTF-filtered backtests (skip 4H bearish)...")
+        results_filt, _ = runner.run_all(price, htf_filter=htf_filter)
+        mtf_comparison = _build_comparison(results_base, results_filt)
+
+        avg_delta = (
+            mtf_comparison["win_rate_filtered"] - mtf_comparison["win_rate_base"]
+        ).mean()
+        improved = (
+            mtf_comparison["win_rate_filtered"] > mtf_comparison["win_rate_base"]
+        ).sum()
+        print(f"      Avg ΔWin Rate: {avg_delta:+.1%}  |  "
+              f"{improved}/{len(mtf_comparison)} strategies improved")
+    else:
+        print("\n[3/5] Skipping HTF filter (no 4H data)")
+
+    # ── Print ranking ─────────────────────────────────────────────
+    print("\n  --- Strategy Ranking (baseline) ---")
     display_cols = ["group", "total", "win_rate", "profit_factor",
                     "net_pnl_pct", "max_consec_loss", "score"]
     print(scored[display_cols].to_string(float_format="{:.3f}".format))
 
     best = scored.index[0]
     print(f"\n  [BEST] {best}  (score={scored.loc[best,'score']:.3f})")
-    print(f"     Trades: {scored.loc[best,'total']:.0f}  |  "
-          f"Win rate: {scored.loc[best,'win_rate']:.1%}  |  "
-          f"Net P&L: {scored.loc[best,'net_pnl_pct']:+.2f}%")
 
     # ── HTML report ───────────────────────────────────────────────
-    print("\n[3/4] Generating HTML report...")
+    print("\n[4/5] Generating HTML report...")
     OUT_DIR.mkdir(exist_ok=True)
-    generate_html(scored, trades_map, price, HTML_OUT)
+    generate_html(
+        scored, trades_map, price, HTML_OUT,
+        mtf_comparison=mtf_comparison,
+        price_4h=xau_4h,
+        price_1d=xau_1d,
+        direction="long",
+    )
 
     # ── Pine Script files ─────────────────────────────────────────
-    print("\n[4/4] Generating Pine Script files...")
+    print("\n[5/5] Generating Pine Script files...")
     generate_pine()
 
     print(f"\n{'=' * 60}")

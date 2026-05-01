@@ -1,87 +1,120 @@
 """
-Entry point for the 20-strategy SHORT-side experiment.
+Entry point for the 20-strategy short experiment.
 
 Steps:
-    1. Load 30-min OHLCV price data
-    2. Run all 20 short strategies via the short backtest engine
+    1. Load 30-min price data + 4H HTF data
+    2. Run baseline backtests (no filter) + HTF-filtered backtests (skip 4H bullish)
     3. Score and rank strategies
-    4. Generate HTML report -> XAUUSD-Short-Experiments/report.html
-    5. Generate Pine Script files -> XAUUSD-Short-Experiments/pine/
+    4. Generate HTML report with MTF filter comparison + per-strategy 4H analysis
+    5. Generate Pine Script files
 
 Usage:
-    py -3.11 run_short_experiments.py
+    python3.12 run_short_experiments.py
 """
 import sys
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+import pandas as pd
 
-from analysis.config import PRICE_CSV
+from analysis.config import PRICE_CSV, PRICE_CSV_4H, XAUUSD_CSV_1D
 from analysis import loader
-from experiments.engine import run_backtest_short, summary
-from experiments.strategies_short import STRATEGIES
-from experiments.runner import score as score_fn
+from analysis.mtf_analysis import prepare_htf_filter
+from experiments import runner
 from experiments.report import generate as generate_html
 from experiments.pine_generator_short import generate_all as generate_pine
-
-import pandas as pd
 
 OUT_DIR  = Path(__file__).parent / "XAUUSD-Short-Experiments"
 HTML_OUT = OUT_DIR / "report.html"
 
 
-def run_all_short(price: pd.DataFrame):
+def _build_comparison(base: pd.DataFrame, filt: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    trades_map = {}
-    for strat_id, (fn, group, description) in STRATEGIES.items():
-        trades = run_backtest_short(price, fn)
-        summ   = summary(trades)
-        trades_map[strat_id] = trades
+    for sid in base.index:
+        b, f = base.loc[sid], filt.loc[sid]
         rows.append({
-            "id":          strat_id,
-            "group":       group,
-            "description": description,
-            **summ,
+            "strategy_id":       sid,
+            "win_rate_base":     b["win_rate"],
+            "win_rate_filtered": f["win_rate"],
+            "trades_base":       b["total"],
+            "trades_filtered":   f["total"],
+            "pf_base":           min(b["profit_factor"], 99),
+            "pf_filtered":       min(f["profit_factor"], 99),
         })
-    df = pd.DataFrame(rows).set_index("id")
-    return df, trades_map
+    return pd.DataFrame(rows).set_index("strategy_id")
 
 
 def main() -> None:
     print("=" * 60)
-    print("  XAUUSD 20-Strategy Short-Side Experiment")
+    print("  XAUUSD 20-Strategy Short Experiment")
     print("=" * 60)
 
-    print(f"\n[1/4] Loading price data from: {PRICE_CSV.name}")
+    # ── Load price data ───────────────────────────────────────────
+    print(f"\n[1/5] Loading price data...")
     price = loader.load_price(PRICE_CSV)
-    print(f"      {len(price)} bars  |  "
-          f"{price['time'].min().date()} -> {price['time'].max().date()}")
+    print(f"      30m: {len(price)} bars  "
+          f"({price['time'].min().date()} → {price['time'].max().date()})")
 
     if len(price) < 60:
         print("ERROR: Need at least 60 bars.")
         sys.exit(1)
 
-    print("\n[2/4] Running 20 short strategy backtests...")
-    results, trades_map = run_all_short(price)
-    scored = score_fn(results)
+    xau_4h = loader.load_price(PRICE_CSV_4H)  if PRICE_CSV_4H.exists()  else None
+    xau_1d = loader.load_price(XAUUSD_CSV_1D) if XAUUSD_CSV_1D.exists() else None
+    htf_filter = prepare_htf_filter(xau_4h) if xau_4h is not None else None
 
-    print("\n  --- Strategy Ranking ---")
+    if xau_4h is not None:
+        print(f"      4H : {len(xau_4h)} bars  "
+              f"({xau_4h['time'].min().date()} → {xau_4h['time'].max().date()})")
+    else:
+        print("      4H : not found — HTF filter disabled")
+
+    # ── Baseline backtests ────────────────────────────────────────
+    print("\n[2/5] Running baseline short backtests (no HTF filter)...")
+    results_base, trades_map = runner.run_all_short(price)
+    scored = runner.score(results_base)
+
+    # ── HTF-filtered backtests ────────────────────────────────────
+    mtf_comparison = None
+    if htf_filter is not None:
+        print("\n[3/5] Running HTF-filtered backtests (skip 4H bullish)...")
+        results_filt, _ = runner.run_all_short(price, htf_filter=htf_filter)
+        mtf_comparison = _build_comparison(results_base, results_filt)
+
+        avg_delta = (
+            mtf_comparison["win_rate_filtered"] - mtf_comparison["win_rate_base"]
+        ).mean()
+        improved = (
+            mtf_comparison["win_rate_filtered"] > mtf_comparison["win_rate_base"]
+        ).sum()
+        print(f"      Avg ΔWin Rate: {avg_delta:+.1%}  |  "
+              f"{improved}/{len(mtf_comparison)} strategies improved")
+    else:
+        print("\n[3/5] Skipping HTF filter (no 4H data)")
+
+    # ── Print ranking ─────────────────────────────────────────────
+    print("\n  --- Strategy Ranking (baseline) ---")
     display_cols = ["group", "total", "win_rate", "profit_factor",
                     "net_pnl_pct", "max_consec_loss", "score"]
     print(scored[display_cols].to_string(float_format="{:.3f}".format))
 
     best = scored.index[0]
     print(f"\n  [BEST] {best}  (score={scored.loc[best,'score']:.3f})")
-    print(f"     Trades: {scored.loc[best,'total']:.0f}  |  "
-          f"Win rate: {scored.loc[best,'win_rate']:.1%}  |  "
-          f"Net P&L: {scored.loc[best,'net_pnl_pct']:+.2f}%")
 
-    print("\n[3/4] Generating HTML report...")
+    # ── HTML report ───────────────────────────────────────────────
+    print("\n[4/5] Generating HTML report...")
     OUT_DIR.mkdir(exist_ok=True)
-    generate_html(scored, trades_map, price, HTML_OUT)
+    generate_html(
+        scored, trades_map, price, HTML_OUT,
+        mtf_comparison=mtf_comparison,
+        price_4h=xau_4h,
+        price_1d=xau_1d,
+        direction="short",
+    )
 
-    print("\n[4/4] Generating Pine Script files...")
+    # ── Pine Script files ─────────────────────────────────────────
+    print("\n[5/5] Generating Pine Script files...")
     generate_pine()
 
     print(f"\n{'=' * 60}")

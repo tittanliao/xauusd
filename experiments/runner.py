@@ -5,11 +5,15 @@ from __future__ import annotations
 
 import pandas as pd
 
-from experiments.engine import run_backtest, summary, Trade
+from experiments.engine import run_backtest, run_backtest_short, summary, Trade
 from experiments.strategies import STRATEGIES
+from experiments.strategies_short import STRATEGIES as SHORT_STRATEGIES
 
 
-def run_all(price: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, list[Trade]]]:
+def run_all(
+    price: pd.DataFrame,
+    htf_filter: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, dict[str, list[Trade]]]:
     """
     Returns:
         results_df  — one row per strategy with all summary metrics
@@ -19,7 +23,34 @@ def run_all(price: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, list[Trade]]]:
     trades_map: dict[str, list[Trade]] = {}
 
     for strat_id, (fn, group, description) in STRATEGIES.items():
-        trades = run_backtest(price, fn)
+        trades = run_backtest(price, fn, htf_filter=htf_filter)
+        summ   = summary(trades)
+        trades_map[strat_id] = trades
+
+        rows.append({
+            "id":           strat_id,
+            "group":        group,
+            "description":  description,
+            **summ,
+        })
+
+    df = pd.DataFrame(rows).set_index("id")
+    return df, trades_map
+
+
+def run_all_short(
+    price: pd.DataFrame,
+    htf_filter: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, dict[str, list[Trade]]]:
+    """
+    Same as run_all() but for the 20 short strategies.
+    htf_filter blocks entries when 4H is bullish (counter-trend short).
+    """
+    rows = []
+    trades_map: dict[str, list[Trade]] = {}
+
+    for strat_id, (fn, group, description) in SHORT_STRATEGIES.items():
+        trades = run_backtest_short(price, fn, htf_filter=htf_filter)
         summ   = summary(trades)
         trades_map[strat_id] = trades
 

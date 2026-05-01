@@ -200,6 +200,17 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 - S1（AweWithBB）：4H bearish 時 `immediate_loss` 比例顯著升高（進場邏輯與大週期背離）
 - S2-Hybrid / S2-Pullback：4H bearish 時 `time_bleed` 比例升高（撐住太久才被掃出）
 
+### HTF Filter 實驗結果（2026-04-30）
+
+對所有 40 個策略套用 4H RSI 過濾器後的平均勝率變化：
+
+| 方向 | 過濾條件 | 平均 ΔWin Rate | 策略改善數 |
+|------|---------|--------------|-----------|
+| 多單（E01–E20） | 跳過 4H bearish 進場 | **+1.6%** | 11/20 |
+| 空單（S01–S20） | 跳過 4H bullish 進場 | **+4.1%** | 16/20 |
+
+**結論**：空單策略受益更明顯。4H bullish 時做空是最大的失敗來源，跳過這些進場顯著提升勝率。
+
 ### 合併 Pine Script（下拉選單版）
 
 - `XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine`：E01–E20 合併（`input.string` 下拉）

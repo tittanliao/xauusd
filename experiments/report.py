@@ -243,11 +243,123 @@ def _trade_detail_table(trades: list[Trade]) -> str:
 # Main generator
 # ---------------------------------------------------------------------------
 
+def _mtf_filter_table(comparison: pd.DataFrame) -> str:
+    """Render a before/after MTF filter comparison table."""
+    rows = []
+    for sid, row in comparison.iterrows():
+        delta = row["win_rate_filtered"] - row["win_rate_base"]
+        delta_str = f"{'▲' if delta > 0 else '▼'} {abs(delta):.1%}"
+        delta_cls = "pos" if delta > 0 else "neg"
+        trade_drop = row["trades_base"] - row["trades_filtered"]
+        rows.append(f"""
+        <tr>
+          <td><strong>{sid}</strong></td>
+          <td>{row['win_rate_base']:.1%}</td>
+          <td>{row['win_rate_filtered']:.1%}</td>
+          <td class="{delta_cls}">{delta_str}</td>
+          <td>{row['trades_base']:.0f}</td>
+          <td>{row['trades_filtered']:.0f}</td>
+          <td style="color:#888">-{trade_drop:.0f}</td>
+          <td>{row['pf_base']:.2f}</td>
+          <td>{row['pf_filtered']:.2f}</td>
+        </tr>""")
+    return f"""
+    <table>
+      <thead><tr>
+        <th>Strategy</th>
+        <th>WR (base)</th><th>WR (filtered)</th><th>Δ Win Rate</th>
+        <th>Trades (base)</th><th>Trades (filtered)</th><th>Reduction</th>
+        <th>PF (base)</th><th>PF (filtered)</th>
+      </tr></thead>
+      <tbody>{"".join(rows)}</tbody>
+    </table>"""
+
+
+def _mtf_state_table(mtf_by_state: pd.DataFrame, direction: str = "long") -> str:
+    """Render win rate by 4H state for experiment trades."""
+    if mtf_by_state.empty:
+        return "<p style='color:gray'>No 4H data available.</p>"
+    favorable = "bearish" if direction == "short" else "bullish"
+    rows = []
+    for state, row in mtf_by_state.iterrows():
+        is_fav = str(state).startswith(favorable)
+        style = " font-weight:600;background:#f1f8e9" if is_fav else ""
+        rows.append(f"""
+        <tr style="{style}">
+          <td>{state}</td>
+          <td>{row['total']}</td>
+          <td>{row['wins']}</td>
+          <td>{row['win_rate']:.1%}</td>
+        </tr>""")
+    label = "4H bearish = aligned (short)" if direction == "short" else "4H bullish = aligned (long)"
+    return f"""
+    <p style="font-size:.85em;color:#666">{label} — highlighted rows are favorable HTF conditions.</p>
+    <table style="max-width:400px">
+      <thead><tr><th>4H State</th><th>Trades</th><th>Wins</th><th>Win Rate</th></tr></thead>
+      <tbody>{"".join(rows)}</tbody>
+    </table>"""
+
+
+def _mtf_per_strategy_html(
+    trades_map: dict,
+    price_4h: pd.DataFrame | None,
+    price_1d: pd.DataFrame | None,
+    direction: str = "long",
+    scored: pd.DataFrame | None = None,
+) -> str:
+    """Build per-strategy MTF analysis cards (4H state win rate for top-10 strategies)."""
+    try:
+        from analysis.mtf_analysis import enrich_trades_with_htf, htf_stats, trades_to_df
+    except ImportError:
+        return ""
+
+    if price_4h is None and price_1d is None:
+        return ""
+
+    order = list(scored.index) if scored is not None else list(trades_map.keys())
+    parts = []
+    for sid in order[:10]:
+        tlist = trades_map.get(sid, [])
+        if not tlist:
+            continue
+        tdf = trades_to_df(tlist, strategy_id=sid)
+        enriched = enrich_trades_with_htf(tdf, price_4h=price_4h, price_1d=price_1d)
+        stats = htf_stats(enriched)
+        state_df = stats.get("by_4h_state", pd.DataFrame())
+        align_df = stats.get("by_alignment", pd.DataFrame())
+        table_html = _mtf_state_table(state_df, direction=direction)
+        align_html = ""
+        if not align_df.empty:
+            rows = []
+            for lbl, row in align_df.iterrows():
+                rows.append(f"<tr><td>{lbl}</td><td>{row['total']}</td>"
+                            f"<td>{row['win_rate']:.1%}</td></tr>")
+            align_html = (
+                "<p style='font-size:.85em;color:#666;margin-top:12px'>"
+                "Alignment score (0–3 TFs in favorable direction):</p>"
+                "<table style='max-width:360px'>"
+                "<thead><tr><th>Alignment</th><th>Trades</th><th>Win Rate</th></tr></thead>"
+                f"<tbody>{''.join(rows)}</tbody></table>"
+            )
+        parts.append(f"""
+        <div style="margin-bottom:20px;padding:14px;background:#f9f9f9;border-radius:8px">
+          <strong>{sid}</strong>
+          {table_html}
+          {align_html}
+        </div>""")
+
+    return "".join(parts)
+
+
 def generate(
     scored: pd.DataFrame,
     trades_map: dict[str, list[Trade]],
     price: pd.DataFrame,
     out_path: Path,
+    mtf_comparison: pd.DataFrame | None = None,
+    price_4h: pd.DataFrame | None = None,
+    price_1d: pd.DataFrame | None = None,
+    direction: str = "long",
 ) -> None:
     generated_at  = datetime.now().strftime("%Y-%m-%d %H:%M")
     data_start    = price["time"].min().strftime("%Y-%m-%d")
@@ -256,12 +368,54 @@ def generate(
     best_id       = scored.index[0]
     best_row      = scored.iloc[0]
 
+    side = direction  # "long" or "short"
+
     # ── Charts ──────────────────────────────────────────────────────────────
     comp_b64  = _comparison_chart(scored)
     freq_b64  = _signal_frequency_chart(scored)
 
     # Top-5 equity curves
     top5_ids = scored.head(5).index.tolist()
+
+    # ── MTF sections ────────────────────────────────────────────────────────
+    mtf_filter_section = ""
+    if mtf_comparison is not None and not mtf_comparison.empty:
+        avg_delta = (mtf_comparison["win_rate_filtered"] - mtf_comparison["win_rate_base"]).mean()
+        improved  = (mtf_comparison["win_rate_filtered"] > mtf_comparison["win_rate_base"]).sum()
+        avg_trade_drop_pct = (
+            1 - mtf_comparison["trades_filtered"].sum() / mtf_comparison["trades_base"].sum()
+        ) * 100
+        filter_type = "4H not bullish (skip counter-trend shorts)" if side == "short" else "4H not bearish (skip counter-trend longs)"
+        mtf_filter_section = f"""
+  <h2 id="mtf-filter">MTF Filter: Before vs After ({filter_type})</h2>
+  <div class="card">
+    <div class="notice" style="margin-bottom:16px">
+      <strong>4H RSI Filter Applied</strong>
+      Entries blocked when the 4H RSI state is
+      {'bullish (counter-trend for shorts)' if side == 'short' else 'bearish (counter-trend for longs)'}.
+      Avg win-rate change: <strong>{avg_delta:+.1%}</strong> across all strategies &nbsp;|&nbsp;
+      {improved}/{len(mtf_comparison)} strategies improved &nbsp;|&nbsp;
+      Trade count reduced by ~{avg_trade_drop_pct:.0f}%
+    </div>
+    {_mtf_filter_table(mtf_comparison)}
+  </div>"""
+
+    mtf_analysis_section = ""
+    if price_4h is not None:
+        per_strat_html = _mtf_per_strategy_html(
+            trades_map, price_4h, price_1d, direction=side, scored=scored
+        )
+        if per_strat_html:
+            direction_label = "4H bearish = aligned condition for shorts" if side == "short" else "4H bullish = aligned condition for longs"
+            mtf_analysis_section = f"""
+  <h2 id="mtf-analysis">MTF Win-Rate Analysis (Top-10 Strategies)</h2>
+  <div class="card">
+    <p style="color:#666;font-size:.9em">
+      Each strategy's win rate broken down by 4H RSI state and alignment score.
+      <strong>{direction_label}</strong>.
+    </p>
+    {per_strat_html}
+  </div>"""
 
     # Per-strategy detail sections
     detail_sections = []
@@ -349,6 +503,10 @@ def generate(
   <div class="card">
     {_results_table(scored)}
   </div>
+
+  {mtf_filter_section}
+
+  {mtf_analysis_section}
 
   <h2>Top-5 Equity Curves</h2>
   <div class="card">

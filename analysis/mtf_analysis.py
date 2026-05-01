@@ -185,6 +185,55 @@ def enrich_trades_with_htf(
     return result
 
 
+def prepare_htf_filter(price_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute per-bar RSI state from a price DataFrame (with rsi + rsi_ma columns).
+    Returns a 2-column DataFrame (time, rsi_state) sorted by time,
+    ready to pass as htf_filter= in the backtesting engine.
+    """
+    if price_df is None or price_df.empty:
+        return pd.DataFrame(columns=["time", "rsi_state"])
+    df = price_df.sort_values("time").reset_index(drop=True).copy()
+    if "rsi_ma" in df.columns:
+        df["_slope"] = df["rsi_ma"].diff(3)
+        df["rsi_state"] = df.apply(
+            lambda r: _rsi_state(r["rsi"], r["rsi_ma"], r.get("_slope", np.nan)), axis=1
+        )
+    else:
+        df["rsi_state"] = "unknown"
+    return df[["time", "rsi_state"]].copy()
+
+
+def trades_to_df(trades_list, strategy_id: str | None = None) -> pd.DataFrame:
+    """
+    Convert a list[Trade] (from experiments/engine.py) to a DataFrame
+    compatible with enrich_trades_with_htf() and htf_stats().
+    Uses pnl_pct as a proxy for net_pnl_usd.
+    """
+    if not trades_list:
+        return pd.DataFrame()
+    rows = []
+    for i, t in enumerate(trades_list):
+        rows.append({
+            "trade_id":    i,
+            "entry_time":  t.entry_time,
+            "exit_time":   t.exit_time,
+            "entry_price": t.entry_price,
+            "exit_price":  t.exit_price,
+            "pnl_pct":     t.pnl_pct,
+            "net_pnl_usd": t.pnl_pct,
+            "hold_bars":   t.hold_bars,
+            "result":      t.result,
+            "mfe_pct":     t.mfe_pct,
+            "mae_pct":     t.mae_pct,
+            "exit_reason": t.exit_reason,
+        })
+    df = pd.DataFrame(rows)
+    if strategy_id:
+        df["strategy_id"] = strategy_id
+    return df.sort_values("entry_time").reset_index(drop=True)
+
+
 def htf_stats(enriched: pd.DataFrame) -> dict[str, pd.DataFrame]:
     """
     Returns a dict of summary DataFrames:

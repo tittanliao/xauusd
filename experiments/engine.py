@@ -19,9 +19,43 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-SL_PCT       = 0.005   # 0.5 %
-TP_PCT       = 0.010   # 1.0 %  →  2:1 reward-to-risk
-MAX_HOLD_BARS = 48     # 24 hours on 30-min bars
+SL_PCT        = 0.005   # 0.5 %
+TP_PCT        = 0.010   # 1.0 %  →  2:1 reward-to-risk
+MAX_HOLD_BARS = 48      # 24 hours on 30-min bars
+
+
+# ---------------------------------------------------------------------------
+# HTF filter helpers (fast numpy binary-search lookup)
+# ---------------------------------------------------------------------------
+
+def _prep_htf(htf_filter: pd.DataFrame | None) -> tuple | None:
+    """Pre-process a (time, rsi_state) DataFrame for O(log n) lookup.
+    Normalises to nanoseconds so it matches pd.Timestamp.value used in lookup."""
+    if htf_filter is None or htf_filter.empty:
+        return None
+    df = htf_filter.sort_values("time").reset_index(drop=True)
+    # Cast to ns before int64 — datetime64[us] int64 gives microseconds,
+    # but pd.Timestamp.value is always nanoseconds (1000× mismatch otherwise).
+    times_ns = df["time"].astype("datetime64[ns]").astype("int64").to_numpy()
+    return times_ns, df["rsi_state"].to_numpy()
+
+
+def _htf_ok_long(prep: tuple | None, bar_time) -> bool:
+    """Return False (block entry) when 4H is bearish — counter-trend long."""
+    if prep is None:
+        return True
+    times_ns, states = prep
+    idx = int(np.searchsorted(times_ns, np.int64(pd.Timestamp(bar_time).value), side="right")) - 1
+    return idx < 0 or states[idx] != "bearish"
+
+
+def _htf_ok_short(prep: tuple | None, bar_time) -> bool:
+    """Return False (block entry) when 4H is bullish — counter-trend short."""
+    if prep is None:
+        return True
+    times_ns, states = prep
+    idx = int(np.searchsorted(times_ns, np.int64(pd.Timestamp(bar_time).value), side="right")) - 1
+    return idx < 0 or states[idx] != "bullish"
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +99,7 @@ def _finalise_short(t: Trade) -> None:
 def run_backtest(
     price: pd.DataFrame,
     signal_fn: Callable[[pd.DataFrame, int], bool],
+    htf_filter: pd.DataFrame | None = None,
 ) -> list[Trade]:
     """
     Runs a single strategy on price data.
@@ -82,6 +117,7 @@ def run_backtest(
     closes = price["close"].to_numpy()
     opens  = price["open"].to_numpy()
     times  = price["time"].to_numpy()
+    _htf   = _prep_htf(htf_filter)
 
     n = len(price)
 
@@ -122,7 +158,7 @@ def run_backtest(
 
         # ── Check for new signal ───────────────────────────────────
         if (not in_trade) and (i < n - 1):
-            if signal_fn(price, i):
+            if signal_fn(price, i) and _htf_ok_long(_htf, times[i]):
                 ep = opens[i + 1]
                 current = Trade(
                     entry_bar   = i + 1,
@@ -141,6 +177,7 @@ def run_backtest(
 def run_backtest_short(
     price: pd.DataFrame,
     signal_fn: Callable[[pd.DataFrame, int], bool],
+    htf_filter: pd.DataFrame | None = None,
 ) -> list[Trade]:
     """
     Short-side backtest engine.
@@ -163,6 +200,7 @@ def run_backtest_short(
     closes = price["close"].to_numpy()
     opens  = price["open"].to_numpy()
     times  = price["time"].to_numpy()
+    _htf   = _prep_htf(htf_filter)
 
     n = len(price)
 
@@ -200,7 +238,7 @@ def run_backtest_short(
             current  = None
 
         if (not in_trade) and (i < n - 1):
-            if signal_fn(price, i):
+            if signal_fn(price, i) and _htf_ok_short(_htf, times[i]):
                 ep = opens[i + 1]
                 current = Trade(
                     entry_bar   = i + 1,
