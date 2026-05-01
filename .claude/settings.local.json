@@ -12,7 +12,12 @@
       "Bash(py --list)",
       "PowerShell(py *)",
       "Bash(rm -rf /Users/tittan/.claude/projects/-Users-tittan-program-github-xauusd/memory)",
-      "Bash(ln -s /Users/tittan/program/github/xauusd/.claude/memory /Users/tittan/.claude/projects/-Users-tittan-program-github-xauusd/memory)"
+      "Bash(ln -s /Users/tittan/program/github/xauusd/.claude/memory /Users/tittan/.claude/projects/-Users-tittan-program-github-xauusd/memory)",
+      "Bash(python3 *)",
+      "Bash(python3.11 -c \"import pandas, numpy, matplotlib; print\\('OK'\\)\")",
+      "Bash(python3.12 -c \"import pandas, numpy, matplotlib; print\\('OK'\\)\")",
+      "Bash(python3.12 *)",
+      "Bash(git commit *)"
     ]
   }
 }
