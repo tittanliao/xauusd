@@ -38,8 +38,10 @@ xauusd/
 │   ├── pre_entry.py        # 進場前情境分析（交易資料 + K 棒 RSI 特徵）
 │   ├── dxy_analysis.py     # DXY 相關性分析
 │   ├── mtf_analysis.py     # 多時間框架（MTF）共軌分析（60m/4H/1D）
+│   ├── bb_analysis.py      # BB 位置分析（%B 分區勝率）
+│   ├── divergence.py       # RSI 背離偵測（bullish/bearish swing lows/highs）
 │   ├── charts.py           # matplotlib 圖表（含 DXY + MTF 圖）
-│   └── report.py           # 自含式 HTML 報告生成器（含 DXY + MTF 段落）
+│   └── report.py           # 自含式 HTML 報告生成器（含 DXY + MTF + BB 段落）
 │
 ├── experiments/            # 策略回測引擎（多單 + 空單共用）
 │   ├── engine.py           # run_backtest()（多單）+ run_backtest_short()（空單）
@@ -210,6 +212,34 @@ S2 策略在 DXY RSI 30–50 時表現最差，可考慮此區間縮倉或暫停
 | 空單（S01–S20） | 跳過 4H bullish 進場 | **+4.1%** | 16/20 |
 
 **結論**：空單策略受益更明顯。4H bullish 時做空是最大的失敗來源，跳過這些進場顯著提升勝率。
+
+---
+
+## BB 位置分析關鍵發現（2026-04-30）
+
+BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_upper）
+
+| BB 分區 | S1 勝率 | S2-Hybrid 勝率 | S2-Pullback 勝率 | 說明 |
+|---------|---------|----------------|-----------------|------|
+| above_upper (>1.0) | **77.8%** | N/A | N/A | S1 突破上軌，強勢進場 |
+| near_upper (0.8–1.0) | **61.1%** | N/A | N/A | S1 接近上軌 |
+| upper_mid (0.65–0.8) | 53.6% | N/A | 50.0% | 中上段 |
+| near_middle (0.45–0.65) | 50.0% | 100%* | 33.3% | 接近中軌 |
+| lower_mid (0.3–0.45) | 20.0% | 25.0% | 50.0% | 中下段 |
+| near_lower (0.1–0.3) | 0.0% | 38.5% | 16.7% | 接近下軌 |
+| below_lower (<0.0) | 0.0% | 0.0% | 20.0% | 破下軌 |
+
+**S1 結論**：price > BB_upper（%B ≥ 1.0）時勝率 77.8%；%B ≥ 0.6 可大幅提升勝率。  
+**S2 結論**：S2 幾乎只在中低 BB 位置進場，BB 位置過濾對 S2 幫助有限。  
+**行動**：已建立 V3.6.1 test 版本，加入 BB %B 過濾器（default off，門檻 0.6）+ 4H HTF 過濾器。
+
+### Pine Script 版本歷程（S1-AweWithBB）
+
+| 版本 | 狀態 | 新增功能 |
+|------|------|---------|
+| V3.4 | 原始版 | 基礎 AweWithBB 策略 |
+| V3.5 | 已確認 | 洞察濾網（DXY RSI + RSI Momentum 動能確認） |
+| V3.6.1 | 測試中 | BB %B 位置過濾器（%B ≥ 0.6）+ 4H HTF RSI 過濾器（跳過 4H bearish） |
 
 ### 合併 Pine Script（下拉選單版）
 

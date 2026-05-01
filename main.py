@@ -98,6 +98,21 @@ def run_strategy(cfg: dict, data: dict | None = None) -> None:
                     "prev_1_dir", "prev_3_green", "momentum_3"]
             print(enriched.dropna(subset=["rsi"])[cols].to_string())
 
+    # ── BB position analysis ──────────────────────────────────────
+    from analysis.bb_analysis import enrich_trades_with_bb, bb_stats
+    bb_enriched = enrich_trades_with_bb(trades, loader.load_price(PRICE_CSV))
+    bb_stats_out = bb_stats(bb_enriched)
+    print(f"\n  --- BB Position Analysis ---")
+    print(bb_stats_out["by_zone"][["total", "win_rate", "avg_pnl"]].to_string())
+
+    # ── Divergence analysis ───────────────────────────────────────
+    from analysis.divergence import enrich_trades_with_divergence, divergence_stats
+    div_enriched = enrich_trades_with_divergence(trades, loader.load_price(PRICE_CSV), lookback_bars=12)
+    div_stats_out = divergence_stats(div_enriched)
+    print(f"\n  --- Pre-entry Divergence (lookback 12 bars = 6h) ---")
+    if not div_stats_out["by_bull_div"].empty:
+        print("  Bull Div:", div_stats_out["by_bull_div"][["total","win_rate"]].to_string())
+
     # ── Multi-Timeframe analysis ──────────────────────────────────
     htf_enriched_out, htf_stats_result = None, None
     if xau_4h is not None or xauusd_1d is not None:
@@ -194,6 +209,8 @@ def run_strategy(cfg: dict, data: dict | None = None) -> None:
         corr_df=corr_df_out,
         htf_enriched=htf_enriched_out,
         htf_stats_out=htf_stats_result,
+        bb_stats_out=bb_stats_out,
+        div_stats_out=div_stats_out,
     )
 
 

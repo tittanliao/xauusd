@@ -74,6 +74,76 @@ CSS = """
 
 
 # ---------------------------------------------------------------------------
+# BB section helper
+# ---------------------------------------------------------------------------
+
+def _bb_section_html(bb_stats_out: dict | None) -> str:
+    if not bb_stats_out or "by_zone" not in bb_stats_out:
+        return ""
+
+    df = bb_stats_out["by_zone"].copy()
+    df = df.dropna(subset=["win_rate"])
+    if df.empty:
+        return ""
+
+    import base64, io
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # Chart: win rate by BB zone
+    fig, ax = plt.subplots(figsize=(9, 3.5))
+    colors = []
+    for wr in df["win_rate"]:
+        if wr >= 0.60: colors.append("#27ae60")
+        elif wr >= 0.45: colors.append("#3498db")
+        else: colors.append("#e74c3c")
+    bars = ax.bar(range(len(df)), df["win_rate"] * 100, color=colors)
+    ax.set_xticks(range(len(df)))
+    ax.set_xticklabels([z.replace("_", " ") for z in df.index], rotation=30, ha="right", fontsize=9)
+    ax.axhline(50, color="gray", linewidth=1, linestyle="--", alpha=0.7)
+    ax.set_ylabel("Win Rate %")
+    ax.set_title("Win Rate by BB Zone at Entry", fontsize=11)
+    for i, (wr, n) in enumerate(zip(df["win_rate"], df["total"])):
+        ax.text(i, wr*100 + 1.5, f"{wr:.0%}\n(n={int(n)})", ha="center", va="bottom", fontsize=8)
+    ax.set_ylim(0, 100)
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+    img_b64 = base64.b64encode(buf.read()).decode()
+    img_tag = f'<img src="data:image/png;base64,{img_b64}" style="max-width:100%;margin:8px 0">'
+
+    # Table HTML
+    rows = []
+    for zone, row in df.iterrows():
+        wr_cls = "color:#27ae60;font-weight:600" if row["win_rate"] >= 0.60 else ("color:#e74c3c" if row["win_rate"] < 0.40 else "")
+        rows.append(f"<tr><td>{zone.replace('_',' ')}</td><td>{int(row['total'])}</td>"
+                    f"<td style='{wr_cls}'>{row['win_rate']:.1%}</td>"
+                    f"<td>${row['avg_pnl']:.2f}</td></tr>")
+    table_html = (
+        "<table style='font-size:.85em;margin-top:12px'>"
+        "<thead><tr><th>BB Zone</th><th>Trades</th><th>Win Rate</th><th>Avg PnL</th></tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody></table>"
+    )
+
+    # Find best zone
+    best_zone = df["win_rate"].idxmax()
+    best_wr = df.loc[best_zone, "win_rate"]
+    insight = f"Best zone: <strong>{best_zone.replace('_',' ')}</strong> ({best_wr:.1%} WR)"
+    if best_zone in ("near_upper", "above_upper"):
+        insight += " — 進場時價格接近/突破上軌，代表強趨勢延續；建議啟用 BB 位置過濾。"
+
+    return f"""
+<h3>Bollinger Band Position Analysis</h3>
+<p style="color:#666;font-size:.9em">Entry-time price position relative to BB(20,2). Higher zone = closer to/above upper band.</p>
+{img_tag}
+{table_html}
+<p style="font-size:.88em;color:#555;margin-top:8px">{insight}</p>
+"""
+
+
+# ---------------------------------------------------------------------------
 # Main generate function
 # ---------------------------------------------------------------------------
 
@@ -90,6 +160,8 @@ def generate(
     corr_df: pd.DataFrame | None = None,
     htf_enriched: pd.DataFrame | None = None,
     htf_stats_out: dict | None = None,
+    bb_stats_out: dict | None = None,
+    div_stats_out: dict | None = None,
 ) -> None:
     """
     Renders and writes a self-contained HTML report to out_path.
@@ -177,6 +249,9 @@ def generate(
 
     # ---- Fail by session table ----
     fbs_html = _table(fail_patterns.fail_by_session(classified))
+
+    # ---- BB section ----
+    bb_html = _bb_section_html(bb_stats_out)
 
     # ---- DXY section ----
     dxy_html = ""
@@ -324,6 +399,8 @@ def generate(
   </div>
 
   {pre_entry_charts_html}
+
+  {bb_html}
 
   {dxy_html}
 
