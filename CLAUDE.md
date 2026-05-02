@@ -70,9 +70,9 @@ xauusd/
 ├── run_short_experiments.py # 空單 20 策略實驗入口
 ├── index.html              # 整合報告（多空 + DXY + MTF + Next Action）
 │
-├── XAUUSD-Long-S1-AweWithBB/    # S1 策略：交易 CSV + report.html + Pine script
-├── XAUUSD-Long-S2-Hybrid/       # S2 策略
-├── XAUUSD-Long-S2-Pullback/     # S3 策略（資料夾名帶 Pullback）
+├── XAUUSD-Long-S1-AweWithBB/    # S1 右側突破：交易 CSV + report.html + Pine scripts
+├── XAUUSD-Long-S2A-RSI/         # S2A 左側回測（指標）：原 S2-Hybrid，RSI 超賣/背離
+├── XAUUSD-Long-S2B-Hammer/      # S2B 左側回測（型態）：原 S2-Pullback，錘頭線
 ├── XAUUSD-Long-Experiments/     # 多單實驗：report.html + pine/（20 files）
 ├── XAUUSD-Short-Experiments/    # 空單實驗：report.html + pine/（20 files）
 └── XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine   # 合併 E01–E20（下拉選單）
@@ -149,13 +149,25 @@ Regular Bullish, Regular Bullish Label, Regular Bearish, Regular Bearish Label
 
 ---
 
+## 策略命名系統（2026-05-02 統一）
+
+| 家族 | 類型 | ID | 舊名 | Pine Entry |
+|------|------|-----|------|------------|
+| S1 | 右側突破 | S1-AweWithBB | — | `S1BB_LE` |
+| S2A | 左側回測（指標） | S2A-RSI | S2-Hybrid | `S2A_LE` |
+| S2B | 左側回測（型態） | S2B-Hammer | S2-Pullback | `S2B_LE` |
+| S2C+ | 左側回測（未來） | TBD | — | `S2C_LE` |
+| S3+ | 空單（未來） | TBD | — | `S3_LE` |
+
+**版本命名規則**：`VX.Y`（確認版）→ `VX.Y+1.1`（測試版）→ `VX.Y+1`（確認後升版）
+
 ## 現有策略最新績效（2026-04-27）
 
 | ID | 策略名稱 | 版本 | 交易筆數 | 勝率 | 獲利因子 | 淨盈虧 | 最大回撤 | 主要問題 |
 |----|---------|------|---------|------|---------|--------|---------|---------|
-| S1 | AweWithBB | V3.4 | 504 | 53.2% | 1.525 | +$6,137 | -$494 | immediate_loss 31% |
-| S2 | Hybrid | V2.0 | 161 | 42.2% | 1.679 | +$6,212 | -$1,177 | time_bleed 52% |
-| S3 | Pullback | V1.9 | 200 | 44.0% | 1.681 | +$7,722 | -$1,431 | time_bleed 54% |
+| S1-AweWithBB | AweWithBB | V3.4 | 504 | 53.2% | 1.525 | +$6,137 | -$494 | immediate_loss 31% |
+| S2A-RSI | RSI Reversion | V2.0 | 161 | 42.2% | 1.679 | +$6,212 | -$1,177 | time_bleed 52% |
+| S2B-Hammer | Hammer Pullback | V1.9 | 200 | 44.0% | 1.681 | +$7,722 | -$1,431 | time_bleed 54% |
 
 ---
 
@@ -233,13 +245,32 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 **S2 結論**：S2 幾乎只在中低 BB 位置進場，BB 位置過濾對 S2 幫助有限。  
 **行動**：已建立 V3.6.1 test 版本，加入 BB %B 過濾器（default off，門檻 0.6）+ 4H HTF 過濾器。
 
-### Pine Script 版本歷程（S1-AweWithBB）
+### Pine Script 版本歷程
+
+**S1-AweWithBB（右側突破）**
 
 | 版本 | 狀態 | 新增功能 |
 |------|------|---------|
 | V3.4 | 原始版 | 基礎 AweWithBB 策略 |
 | V3.5 | 已確認 | 洞察濾網（DXY RSI + RSI Momentum 動能確認） |
-| V3.6.1 | 測試中 | BB %B 位置過濾器（%B ≥ 0.6）+ 4H HTF RSI 過濾器（跳過 4H bearish） |
+| V3.6.1 | 測試中 | BB %B 位置過濾器（%B ≥ 0.6）+ 4H HTF RSI 過濾器 |
+| V3.6.2 | 測試中 | 修正 lookahead_on 重繪 bug + EMA 趨勢過濾器 group（架構統一） |
+
+**S2A-RSI（左側回測，指標）— 原 S2-Hybrid**
+
+| 版本 | 狀態 | 說明 |
+|------|------|------|
+| V2.0 | 原始版 | RSI crossover / 背離兩種模式 |
+| V2.1 | 已確認 | 洞察濾網（DXY RSI + EMA200 + ATR 波動度） |
+| V2.2 | 測試中 | 重命名架構統一：entry S2A_LE，補 TP 顯示，加過濾訊號視覺化 |
+
+**S2B-Hammer（左側回測，型態）— 原 S2-Pullback**
+
+| 版本 | 狀態 | 說明 |
+|------|------|------|
+| V1.9 | 原始版 | 錘頭線 + ATR 濾網 |
+| V2.0 | 已確認 | 洞察濾網（DXY RSI + EMA200 + RSI 情境區間） |
+| V2.1 | 測試中 | 重命名架構統一：entry S2B_LE，加趨勢 EMA group |
 
 ### 合併 Pine Script（下拉選單版）
 

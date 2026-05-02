@@ -11,21 +11,21 @@ CSV_DIR = ROOT / "csv"
 
 STRATEGIES = [
     {
-        "id": "S1-AweWithBB",
+        "id": "S1-AweWithBB",       # Right-side breakout: BB + AO momentum
         "version": "3.4",
         "folder": ROOT / "XAUUSD-Long-S1-AweWithBB",
         "trades_csv": "S1-Awe-V3.4_FX_IDC_XAUUSD_2026-04-26.csv",
     },
     {
-        "id": "S2-Hybrid",
+        "id": "S2A-RSI",            # Left-side reversion: indicator-triggered (RSI crossover / divergence)
         "version": "2.0",
-        "folder": ROOT / "XAUUSD-Long-S2-Hybrid",
+        "folder": ROOT / "XAUUSD-Long-S2A-RSI",
         "trades_csv": "S2-Hybrid-V2.0_FX_IDC_XAUUSD_2026-04-26.csv",
     },
     {
-        "id": "S2-Pullback",
+        "id": "S2B-Hammer",         # Left-side reversion: price-action triggered (hammer candle)
         "version": "1.9",
-        "folder": ROOT / "XAUUSD-Long-S2-Pullback",
+        "folder": ROOT / "XAUUSD-Long-S2B-Hammer",
         "trades_csv": "S2-Pullback-V1.9_FX_IDC_XAUUSD_2026-04-26.csv",
     },
 ]
