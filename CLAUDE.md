@@ -262,7 +262,8 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 |------|------|------|
 | V2.0 | 原始版 | RSI crossover / 背離兩種模式 |
 | V2.1 | 已確認 | 洞察濾網（DXY RSI + EMA200 + ATR 波動度） |
-| V2.2 | 測試中 | 重命名架構統一：entry S2A_LE，補 TP 顯示，加過濾訊號視覺化 |
+| V2.2 | 已確認 | 重命名架構統一：entry S2A_LE，補 TP 顯示，加過濾訊號視覺化 |
+| V2.3 | 測試中 | **時間止損修正**（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2） |
 
 **S2B-Hammer（左側回測，型態）— 原 S2-Pullback**
 
@@ -270,7 +271,8 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 |------|------|------|
 | V1.9 | 原始版 | 錘頭線 + ATR 濾網 |
 | V2.0 | 已確認 | 洞察濾網（DXY RSI + EMA200 + RSI 情境區間） |
-| V2.1 | 測試中 | 重命名架構統一：entry S2B_LE，加趨勢 EMA group |
+| V2.1 | 已確認 | 重命名架構統一：entry S2B_LE，加趨勢 EMA group |
+| V2.2 | 測試中 | **時間止損修正**（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2） |
 
 ### 合併 Pine Script（下拉選單版）
 
