@@ -384,25 +384,26 @@ tbody tr:hover td{background:#f8fafc}
         <div class="cond-card long" style="margin-bottom:8px">
           <h4>✅ 優先進場</h4>
           <ul class="cond-list">
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上 → WR ~59%</li>
+            <li>日線 DXY RSI(14) &lt; 30 → WR 60.9%</li>
+            <li>HTF alignment ≥ 2/3 → WR ~57–69%</li>
             <li>30m BB %B &gt; 0.8 → WR 61–78%</li>
-            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
-            <li>日線 DXY RSI(14) &lt; 30</li>
-            <li>HTF alignment ≥ 2/3</li>
           </ul>
         </div>
         <div class="cond-card short" style="margin-bottom:8px">
           <h4>❌ 禁止進場</h4>
           <ul class="cond-list">
-            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → immediate_loss 飆升</li>
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → WR ~44%（immediate_loss 飆升）</li>
             <li>30m BB %B &lt; 0.4 → WR 0–20%</li>
-            <li>時段 09:00 / 14:00（UTC+8）</li>
+            <li>時段 09:00 / 14:00（UTC+8）→ immediate_loss 最集中</li>
           </ul>
         </div>
         <div class="cond-card avoid">
           <h4>⚠ 縮倉</h4>
           <ul class="cond-list">
-            <li>日線 DXY RSI 30–50（WR 49.8%）</li>
-            <li>30m BB %B 0.6–0.8（WR 53.6%）</li>
+            <li>日線 DXY RSI 30–50 → WR 49.8%</li>
+            <li>30m BB %B 0.6–0.8 → WR 53.6%</li>
+            <li>HTF alignment 1/3 → WR ~50%</li>
           </ul>
         </div>
       </div>
@@ -412,22 +413,22 @@ tbody tr:hover td{background:#f8fafc}
         <div class="cond-card long" style="margin-bottom:8px">
           <h4>✅ 優先進場</h4>
           <ul class="cond-list">
-            <li>日線 DXY RSI(14) &lt; 30 → WR 75%</li>
-            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
-            <li>30m BB %B 0.2–0.4（lower_mid）</li>
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上 → WR ~50%</li>
+            <li>日線 DXY RSI(14) &lt; 30 → WR 75%（n=4）</li>
+            <li>30m BB %B 0.2–0.4（lower_mid）→ WR 相對最高</li>
           </ul>
         </div>
         <div class="cond-card short" style="margin-bottom:8px">
           <h4>❌ 禁止進場</h4>
           <ul class="cond-list">
-            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → time_bleed 46.6%</li>
-            <li>日線 DXY RSI 30–50（WR 38.4%）</li>
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → WR ~34%（time_bleed 46.6%）</li>
+            <li>日線 DXY RSI 30–50 → WR 38.4%</li>
           </ul>
         </div>
         <div class="cond-card avoid">
           <h4>⚠ 注意</h4>
           <ul class="cond-list">
-            <li>亞盤（07:00–15:59 UTC+8）考慮關閉</li>
+            <li>亞盤（07:00–15:59 UTC+8）→ 三時段 WR 最低</li>
             <li>持倉 &gt; 48 bars → V2.3 強制平倉</li>
           </ul>
         </div>
@@ -438,24 +439,24 @@ tbody tr:hover td{background:#f8fafc}
         <div class="cond-card long" style="margin-bottom:8px">
           <h4>✅ 優先進場</h4>
           <ul class="cond-list">
-            <li>30m BB %B 0.2–0.4 → WR 50%</li>
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上 → WR ~52%</li>
             <li>日線 DXY RSI(14) &lt; 30 → WR 66.7%</li>
-            <li>US session 22:00–06:59（WR 49.3%）</li>
-            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
+            <li>30m BB %B 0.2–0.4 → WR 50%</li>
+            <li>US session 22:00–06:59 → WR 49.3%</li>
           </ul>
         </div>
         <div class="cond-card short" style="margin-bottom:8px">
           <h4>❌ 禁止進場</h4>
           <ul class="cond-list">
-            <li>30m BB %B 0.8–1.0 → WR 僅 14.3%</li>
-            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下</li>
-            <li>亞盤（07:00–15:59，WR 39.5%）</li>
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → WR ~33%（time_bleed 最嚴重）</li>
+            <li>亞盤（07:00–15:59 UTC+8）→ WR 39.5%</li>
+            <li>30m BB %B 0.8–1.0 → WR 14.3%（錘頭陷阱）</li>
           </ul>
         </div>
         <div class="cond-card avoid">
           <h4>⚠ 縮倉</h4>
           <ul class="cond-list">
-            <li>日線 DXY RSI 30–50（WR 38.2%）</li>
+            <li>日線 DXY RSI 30–50 → WR 38.2%</li>
             <li>持倉 &gt; 48 bars → V2.2 強制平倉</li>
           </ul>
         </div>
