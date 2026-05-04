@@ -375,8 +375,102 @@ tbody tr:hover td{background:#f8fafc}
       </div>
     </div>
 
-    <!-- Part 2: History -->
-    <div class="part-label"><span class="part-badge">PART 2</span>分析紀錄 · Collaboration Log</div>
+    <!-- Part 2: Field Notes Summary -->
+    <div class="part-label"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
+    <div class="grid-3">
+
+      <div class="card" style="padding:16px 18px">
+        <div class="card-title">📊 S1-AweWithBB <span class="badge badge-yellow">V3.6.2</span></div>
+        <div class="cond-card long" style="margin-bottom:8px">
+          <h4>✅ 優先進場</h4>
+          <ul class="cond-list">
+            <li>30m BB %B &gt; 0.8 → WR 61–78%</li>
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
+            <li>日線 DXY RSI(14) &lt; 30</li>
+            <li>HTF alignment ≥ 2/3</li>
+          </ul>
+        </div>
+        <div class="cond-card short" style="margin-bottom:8px">
+          <h4>❌ 禁止進場</h4>
+          <ul class="cond-list">
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → immediate_loss 飆升</li>
+            <li>30m BB %B &lt; 0.4 → WR 0–20%</li>
+            <li>時段 09:00 / 14:00（UTC+8）</li>
+          </ul>
+        </div>
+        <div class="cond-card avoid">
+          <h4>⚠ 縮倉</h4>
+          <ul class="cond-list">
+            <li>日線 DXY RSI 30–50（WR 49.8%）</li>
+            <li>30m BB %B 0.6–0.8（WR 53.6%）</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px 18px">
+        <div class="card-title">📊 S2A-RSI <span class="badge badge-yellow">V2.3</span></div>
+        <div class="cond-card long" style="margin-bottom:8px">
+          <h4>✅ 優先進場</h4>
+          <ul class="cond-list">
+            <li>日線 DXY RSI(14) &lt; 30 → WR 75%</li>
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
+            <li>30m BB %B 0.2–0.4（lower_mid）</li>
+          </ul>
+        </div>
+        <div class="cond-card short" style="margin-bottom:8px">
+          <h4>❌ 禁止進場</h4>
+          <ul class="cond-list">
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下 → time_bleed 46.6%</li>
+            <li>日線 DXY RSI 30–50（WR 38.4%）</li>
+          </ul>
+        </div>
+        <div class="cond-card avoid">
+          <h4>⚠ 注意</h4>
+          <ul class="cond-list">
+            <li>亞盤（07:00–15:59 UTC+8）考慮關閉</li>
+            <li>持倉 &gt; 48 bars → V2.3 強制平倉</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px 18px">
+        <div class="card-title">📊 S2B-Hammer <span class="badge badge-yellow">V2.2</span></div>
+        <div class="cond-card long" style="margin-bottom:8px">
+          <h4>✅ 優先進場</h4>
+          <ul class="cond-list">
+            <li>30m BB %B 0.2–0.4 → WR 50%</li>
+            <li>日線 DXY RSI(14) &lt; 30 → WR 66.7%</li>
+            <li>US session 22:00–06:59（WR 49.3%）</li>
+            <li>4H RSI &gt; RSI-MA，且 RSI-MA 斜率向上</li>
+          </ul>
+        </div>
+        <div class="cond-card short" style="margin-bottom:8px">
+          <h4>❌ 禁止進場</h4>
+          <ul class="cond-list">
+            <li>30m BB %B 0.8–1.0 → WR 僅 14.3%</li>
+            <li>4H RSI &lt; RSI-MA，且 RSI-MA 斜率向下</li>
+            <li>亞盤（07:00–15:59，WR 39.5%）</li>
+          </ul>
+        </div>
+        <div class="cond-card avoid">
+          <h4>⚠ 縮倉</h4>
+          <ul class="cond-list">
+            <li>日線 DXY RSI 30–50（WR 38.2%）</li>
+            <li>持倉 &gt; 48 bars → V2.2 強制平倉</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div style="font-size:.8em;color:var(--muted);margin:-8px 0 16px;padding:0 4px">
+      <strong>條件定義：</strong>
+      4H RSI-MA 斜率 = RSI-based MA 連續 3 根 4H K 棒的變化量（diff(3)）。&nbsp;
+      BB %B = (收盤 − 下軌) ÷ (上軌 − 下軌)，布林帶 = 30m SMA20 ± 2σ。&nbsp;
+      DXY = 日線 RSI(14)。
+    </div>
+
+    <!-- Part 3: History -->
+    <div class="part-label"><span class="part-badge">PART 3</span>分析紀錄 · Collaboration Log</div>
     <div class="card">
       <div class="tbl-wrap">
         <table>
