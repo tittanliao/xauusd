@@ -483,31 +483,33 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S1 進場條件與使用注意</div>
+      <div class="card-title">📋 S1-AweWithBB 資料驅動進場指引（504 筆回測）</div>
       <div class="grid-2" style="gap:12px">
-        <div class="cond-card avoid">
-          <h4>⚙ 停損與部位管理</h4>
+        <div class="cond-card long">
+          <h4>✅ 優先進場條件（滿足越多越好）</h4>
           <ul class="cond-list">
-            <li>固定停損 <strong>$25</strong></li>
-            <li>4H 中軌以下觸發 → 停損機率極高，建議跳過</li>
-            <li>散戶籌碼週報中性（無方向）→ 假突破機率高，降低部位或不進場</li>
+            <li>BB %B &gt; 0.8（near_upper / above_upper）→ WR <strong>61–78%</strong>，S1 最強區間</li>
+            <li>HTF alignment ≥ 2/3（2 個以上 TF 看多）→ WR ~57–69%</li>
+            <li>DXY RSI &lt; 30（美元超賣）→ WR 60.9%，最佳進場窗口</li>
+            <li>4H RSI state = bullish → immediate_loss 比例最低</li>
           </ul>
         </div>
         <div class="cond-card short">
-          <h4>❌ 下降趨勢中的 S1 陷阱</h4>
+          <h4>❌ 禁止進場條件</h4>
           <ul class="cond-list">
-            <li>大跌後 V 型反彈出現的 S1 → 通常是下跌中繼，非真反轉</li>
-            <li>下降趨勢中出現的 S1 多單，大多再跌</li>
+            <li>4H RSI bearish → immediate_loss 顯著上升，進場即虧</li>
+            <li>BB %B &lt; 0.4（中軌以下）→ WR 0–20%</li>
+            <li>進場時段 09:00 / 14:00（UTC+8）→ immediate_loss 集中時段</li>
+            <li>HTF alignment 0/3（全看空）→ WR 僅 ~43%</li>
           </ul>
         </div>
       </div>
       <div class="cond-card avoid" style="margin-top:12px">
-        <h4>📌 假突破反手做空（進階戰術）</h4>
+        <h4>⚠ 降低部位條件（仍可進場，但縮倉）</h4>
         <ul class="cond-list">
-          <li>先確立當天 High / Low 作為流動性參考範圍</li>
-          <li>S1 訊號出現後 K 棒收「中性」（上下影線均等，無明確方向）</li>
-          <li>價格突破當天高點、掃完上方流動性後快速回落 → 判定假突破</li>
-          <li>反手做空，停損設在突破高點之上</li>
+          <li>DXY RSI 30–50 → WR 49.8%，S1 最差 DXY 區間</li>
+          <li>BB %B 0.6–0.8（upper_mid）→ WR 53.6%，邊際值，需其他條件支撐</li>
+          <li>HTF alignment 1/3 → WR ~50%，訊號強度不足</li>
         </ul>
       </div>
     </div>
@@ -556,30 +558,31 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S2A-RSI 進場條件與使用注意</div>
+      <div class="card-title">📋 S2A-RSI 資料驅動進場指引（161 筆回測）</div>
       <div class="grid-2" style="gap:12px">
-        <div class="cond-card avoid">
-          <h4>⚙ 停損與部位管理</h4>
+        <div class="cond-card long">
+          <h4>✅ 優先進場條件</h4>
           <ul class="cond-list">
-            <li>固定停損 <strong>$50</strong></li>
-            <li>設定非交易時間止損（亞盤低流動性時段）</li>
-            <li>掛單有效期限最多 <strong>1 天</strong>；超過即取消，避免遇到大跌多吃虧損</li>
+            <li>DXY RSI &lt; 30（美元超賣）→ WR 75%（n=4，謹慎參考）</li>
+            <li>4H RSI bullish → time_bleed 比例最低，WR ~50%</li>
+            <li>BB lower_mid zone（%B 0.2–0.4）→ S2A 在此區間 WR 相對較高</li>
           </ul>
         </div>
         <div class="cond-card short">
-          <h4>⚠ BB 上軌附近要小心</h4>
+          <h4>❌ 禁止進場條件</h4>
           <ul class="cond-list">
-            <li>S2 在 BB 上軌附近出現 → 逆勢風險高，降低部位</li>
-            <li>周五收盤前的 S2 訊號：即使在中軌之上，禮拜一亞盤仍可能繼續上漲 → 謹慎操作或等待確認</li>
+            <li>4H RSI bearish → time_bleed 比例升至 46.6%，最嚴重的持倉超時組合</li>
+            <li>DXY RSI 30–50 → WR 38.4%，S2A 最差 DXY 區間，考慮暫停</li>
           </ul>
         </div>
       </div>
       <div class="cond-card avoid" style="margin-top:12px">
-        <h4>📌 S2A-RSI 進場時機優化</h4>
+        <h4>⚠ 注意事項</h4>
         <ul class="cond-list">
-          <li>應在<strong>價格破底時</strong>才觸發 → 確認下跌動能存在再進場</li>
-          <li>僅憑一根上漲 K 棒 + RSI &gt; 30 進場 → 風險太高</li>
-          <li>建議等待：漲過進場 K 棒高點後，<strong>回踩時再進場</strong>（確認支撐有效）</li>
+          <li>S2A 大多數進場落在 near_lower（WR 38.5%，13 筆）和 lower_mid（WR 25%，20 筆）→ BB 位置無法過濾 S2A，勝率本就不高</li>
+          <li>勝率 42.2% 靠獲利因子 1.679 撐起獲利 → 重點是縮短持倉時間，非提高進場頻率</li>
+          <li>亞盤時段表現最弱 → 考慮關閉亞盤進場</li>
+          <li>持倉超過 48 bars（24h）→ 強制市價平倉（V2.3 strategy.close() 已實作）</li>
         </ul>
       </div>
     </div>
@@ -628,23 +631,33 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S2B-Hammer 進場條件與使用注意</div>
+      <div class="card-title">📋 S2B-Hammer 資料驅動進場指引（200 筆回測）</div>
       <div class="grid-2" style="gap:12px">
-        <div class="cond-card avoid">
-          <h4>⚙ 停損與部位管理</h4>
+        <div class="cond-card long">
+          <h4>✅ 優先進場條件</h4>
           <ul class="cond-list">
-            <li>固定停損 <strong>$50</strong></li>
-            <li>設定非交易時間止損（亞盤低流動性時段）</li>
-            <li>掛單有效期限最多 <strong>1 天</strong>；超過即取消，避免遇到大跌多吃虧損</li>
+            <li>BB lower_mid zone（%B 0.2–0.4）→ WR <strong>50%</strong>，S2B 最佳 BB 區間</li>
+            <li>DXY RSI &lt; 30（美元超賣）→ WR 66.7%</li>
+            <li>US session（22:00–06:59 UTC+8）→ WR 49.3%，三時段最佳</li>
+            <li>4H RSI bullish → time_bleed 比例最低</li>
           </ul>
         </div>
         <div class="cond-card short">
-          <h4>⚠ BB 上軌附近要小心</h4>
+          <h4>❌ 禁止進場條件</h4>
           <ul class="cond-list">
-            <li>S2 在 BB 上軌附近出現 → 逆勢風險高，降低部位</li>
-            <li>周五收盤前的 S2 訊號：禮拜一亞盤仍可能繼續上漲 → 謹慎操作</li>
+            <li>BB near_upper zone（%B 0.8–1.0）→ WR <strong>僅 14.3%</strong>（n=7）— 趨勢末端錘頭線是陷阱</li>
+            <li>4H RSI bearish → time_bleed 最嚴重，54% 虧損為超時持倉</li>
+            <li>Asia session（07:00–15:59）→ WR 39.5%，三時段最差</li>
           </ul>
         </div>
+      </div>
+      <div class="cond-card avoid" style="margin-top:12px">
+        <h4>⚠ 注意事項</h4>
+        <ul class="cond-list">
+          <li>DXY RSI 30–50 → WR 38.2%，與 S2A 相同的最差 DXY 區間，考慮縮倉或暫停</li>
+          <li>Europe session（16:00–21:59）→ WR 43.7%，中等，不過濾但謹慎</li>
+          <li>持倉超過 48 bars（24h）→ 強制市價平倉（V2.2 strategy.close() 已實作）</li>
+        </ul>
       </div>
     </div>
 
