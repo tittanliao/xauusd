@@ -249,7 +249,7 @@ tbody tr:hover td{background:#f8fafc}
     <button class="nav-main-tab" onclick="showMain('experiments',this)">實驗策略測試</button>
     <button class="nav-main-tab" onclick="showMain('trading',this)">當沖讀圖指南</button>
   </div>
-  <div class="nav-meta">Updated 2026-05-02</div>
+  <div class="nav-meta">Updated 2026-05-04</div>
 </nav>
 
 <!-- ══ SECTION A: 現有策略優化 ══════════════════════════════════ -->
@@ -481,7 +481,38 @@ tbody tr:hover td{background:#f8fafc}
       <a class="report-link" href="XAUUSD-Long-S1-AweWithBB/XAUUSD-Long-S1-AweWithBB-V3.5.pine">✅ V3.5 確認版 Pine Script</a>
     </div>
 
-    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>S1 分析紀錄</div>
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
+    <div class="card">
+      <div class="card-title">📋 S1 進場條件與使用注意</div>
+      <div class="grid-2" style="gap:12px">
+        <div class="cond-card avoid">
+          <h4>⚙ 停損與部位管理</h4>
+          <ul class="cond-list">
+            <li>固定停損 <strong>$25</strong></li>
+            <li>4H 中軌以下觸發 → 停損機率極高，建議跳過</li>
+            <li>散戶籌碼週報中性（無方向）→ 假突破機率高，降低部位或不進場</li>
+          </ul>
+        </div>
+        <div class="cond-card short">
+          <h4>❌ 下降趨勢中的 S1 陷阱</h4>
+          <ul class="cond-list">
+            <li>大跌後 V 型反彈出現的 S1 → 通常是下跌中繼，非真反轉</li>
+            <li>下降趨勢中出現的 S1 多單，大多再跌</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cond-card avoid" style="margin-top:12px">
+        <h4>📌 假突破反手做空（進階戰術）</h4>
+        <ul class="cond-list">
+          <li>先確立當天 High / Low 作為流動性參考範圍</li>
+          <li>S1 訊號出現後 K 棒收「中性」（上下影線均等，無明確方向）</li>
+          <li>價格突破當天高點、掃完上方流動性後快速回落 → 判定假突破</li>
+          <li>反手做空，停損設在突破高點之上</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 3</span>S1 分析紀錄</div>
     <div class="card">
       <div class="tbl-wrap">
         <table>
@@ -523,7 +554,37 @@ tbody tr:hover td{background:#f8fafc}
       <a class="report-link" href="XAUUSD-Long-S2A-RSI/XAUUSD-Long-S2A-RSI-V2.3.pine">🧪 V2.3 測試版 Pine Script</a>
     </div>
 
-    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>S2A-RSI 分析紀錄</div>
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
+    <div class="card">
+      <div class="card-title">📋 S2A-RSI 進場條件與使用注意</div>
+      <div class="grid-2" style="gap:12px">
+        <div class="cond-card avoid">
+          <h4>⚙ 停損與部位管理</h4>
+          <ul class="cond-list">
+            <li>固定停損 <strong>$50</strong></li>
+            <li>設定非交易時間止損（亞盤低流動性時段）</li>
+            <li>掛單有效期限最多 <strong>1 天</strong>；超過即取消，避免遇到大跌多吃虧損</li>
+          </ul>
+        </div>
+        <div class="cond-card short">
+          <h4>⚠ BB 上軌附近要小心</h4>
+          <ul class="cond-list">
+            <li>S2 在 BB 上軌附近出現 → 逆勢風險高，降低部位</li>
+            <li>周五收盤前的 S2 訊號：即使在中軌之上，禮拜一亞盤仍可能繼續上漲 → 謹慎操作或等待確認</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cond-card avoid" style="margin-top:12px">
+        <h4>📌 S2A-RSI 進場時機優化</h4>
+        <ul class="cond-list">
+          <li>應在<strong>價格破底時</strong>才觸發 → 確認下跌動能存在再進場</li>
+          <li>僅憑一根上漲 K 棒 + RSI &gt; 30 進場 → 風險太高</li>
+          <li>建議等待：漲過進場 K 棒高點後，<strong>回踩時再進場</strong>（確認支撐有效）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 3</span>S2A-RSI 分析紀錄</div>
     <div class="card">
       <div class="tbl-wrap">
         <table>
@@ -565,7 +626,29 @@ tbody tr:hover td{background:#f8fafc}
       <a class="report-link" href="XAUUSD-Long-S2B-Hammer/XAUUSD-Long-S2B-Hammer-V2.2.pine">🧪 V2.2 測試版 Pine Script</a>
     </div>
 
-    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>S2B-Hammer 分析紀錄</div>
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
+    <div class="card">
+      <div class="card-title">📋 S2B-Hammer 進場條件與使用注意</div>
+      <div class="grid-2" style="gap:12px">
+        <div class="cond-card avoid">
+          <h4>⚙ 停損與部位管理</h4>
+          <ul class="cond-list">
+            <li>固定停損 <strong>$50</strong></li>
+            <li>設定非交易時間止損（亞盤低流動性時段）</li>
+            <li>掛單有效期限最多 <strong>1 天</strong>；超過即取消，避免遇到大跌多吃虧損</li>
+          </ul>
+        </div>
+        <div class="cond-card short">
+          <h4>⚠ BB 上軌附近要小心</h4>
+          <ul class="cond-list">
+            <li>S2 在 BB 上軌附近出現 → 逆勢風險高，降低部位</li>
+            <li>周五收盤前的 S2 訊號：禮拜一亞盤仍可能繼續上漲 → 謹慎操作</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 3</span>S2B-Hammer 分析紀錄</div>
     <div class="card">
       <div class="tbl-wrap">
         <table>
