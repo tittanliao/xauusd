@@ -200,6 +200,43 @@ tbody tr:hover td{background:#f8fafc}
 .dot-yellow{background:var(--yellow)}
 .dot-red{background:var(--red)}
 .dot-blue{background:var(--primary)}
+
+/* ── Tab 3: Trading Guide ───────────────────────────── */
+.tpo-viz{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.tpo-vrow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.tpo-vprice{width:52px;text-align:right;color:var(--muted);font-size:.79em;font-family:monospace;flex-shrink:0}
+.tpo-vletters{display:flex;gap:2px}
+.tpo-vltr{width:15px;height:15px;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:700;border-radius:2px;font-family:monospace}
+.tvl-n{background:#dbeafe;color:#1e40af}.tvl-poc{background:var(--yellow-light);color:#92400e}.tvl-va{background:var(--green-light);color:#065f46}.tvl-s{background:var(--red-light);color:var(--red)}
+.tpo-vtag{font-size:.72em;padding:1px 8px;border-radius:10px;font-weight:700;margin-left:4px;flex-shrink:0}
+.tvt-poc{background:var(--yellow-light);color:#92400e}.tvt-va{background:var(--green-light);color:#065f46}.tvt-s{background:var(--red-light);color:var(--red)}
+
+.fp-viz{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.fp-vrow{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.fp-vprice{width:48px;text-align:right;color:var(--muted);font-size:.79em;font-family:monospace;flex-shrink:0}
+.fp-vcell{flex:1;display:flex;gap:4px}
+.fp-vb,.fp-va{flex:1;padding:3px 8px;border-radius:4px;font-size:.8em;font-family:monospace;font-weight:600;text-align:center}
+.fp-vb{background:var(--red-light);color:var(--red)}.fp-va{background:var(--green-light);color:var(--green)}
+.fp-vb.hi{background:#fca5a5;color:#7f1d1d}.fp-va.hi{background:#6ee7b7;color:#064e3b}
+.fp-vd{width:54px;text-align:right;font-size:.8em;font-family:monospace;font-weight:700;flex-shrink:0}
+.fp-vd.p{color:var(--green)}.fp-vd.n{color:var(--red)}
+
+.gflow-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.gflow-step:last-child{margin-bottom:0}
+.gflow-num{width:28px;height:28px;border-radius:50%;background:var(--primary-light);border:2px solid var(--primary);color:var(--primary);font-size:.82em;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:monospace}
+.gflow-body h4{font-size:.9em;font-weight:700;color:var(--text2);margin-bottom:3px}
+.gflow-body p{font-size:.82em;color:var(--muted);line-height:1.5}
+.gflow-arrow{color:var(--border);font-size:18px;margin:-8px 0 8px 42px}
+
+.cond-card{border-radius:8px;padding:14px 16px;margin-bottom:10px;border-left:4px solid}
+.cond-card.long{background:var(--green-light);border-color:var(--green)}
+.cond-card.short{background:var(--red-light);border-color:var(--red)}
+.cond-card.avoid{background:var(--surface2);border:1px solid var(--border);border-left-width:4px;border-left-color:var(--muted)}
+.cond-card h4{font-size:.88em;font-weight:700;margin-bottom:8px}
+.cond-card.long h4{color:var(--green)}.cond-card.short h4{color:var(--red)}.cond-card.avoid h4{color:var(--muted)}
+.cond-list{list-style:none;font-size:.84em;color:var(--text2)}
+.cond-list li{padding:3px 0 3px 16px;position:relative}
+.cond-list li::before{content:'→';position:absolute;left:0;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -210,6 +247,7 @@ tbody tr:hover td{background:#f8fafc}
   <div class="nav-main-tabs">
     <button class="nav-main-tab active" onclick="showMain('optimization',this)">現有策略優化</button>
     <button class="nav-main-tab" onclick="showMain('experiments',this)">實驗策略測試</button>
+    <button class="nav-main-tab" onclick="showMain('trading',this)">當沖讀圖指南</button>
   </div>
   <div class="nav-meta">Updated 2026-05-02</div>
 </nav>
@@ -689,6 +727,505 @@ tbody tr:hover td{background:#f8fafc}
     </div>
   </div><!-- /exp-short -->
 </div><!-- /main-experiments -->
+
+<!-- ══ SECTION C: 當沖讀圖指南 ══════════════════════════════════ -->
+<div id="main-trading" class="main-section">
+  <div class="subnav">
+    <button class="sub-tab active" onclick="showTab('trd','tpo',this)">① TPO 概念</button>
+    <button class="sub-tab" onclick="showTab('trd','footprint',this)">② Footprint 概念</button>
+    <button class="sub-tab" onclick="showTab('trd','combo',this)">③ 三層確認系統</button>
+    <button class="sub-tab" onclick="showTab('trd','decision',this)">④ 決策速查表</button>
+  </div>
+
+  <!-- ── TPO Tab ─────────────────────────────── -->
+  <div id="trd-tpo" class="tab-panel active">
+    <div class="part-label"><span class="part-badge">TPO</span>時間價格機會 · Time Price Opportunity</div>
+
+    <div class="insight-grid">
+      <div class="insight info"><strong>核心邏輯：時間 = 認可</strong>價格在某區間待越久，代表買賣雙方越接受這個價格。待越短，代表市場拒絕並快速離開。每個字母代表一個 30 分鐘時段。</div>
+      <div class="insight good"><strong>當沖應用口訣</strong>價格在 VA 內 → 震盪盤整，不追趨勢<br>價格突破 VAH 或跌破 VAL → 趨勢延伸，配合 AWE 進場</div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-title">📊 TPO 結構示意圖</div>
+          <div class="tpo-viz">
+            <div style="display:flex;gap:6px;margin-bottom:10px;font-size:.75em;color:var(--muted);font-family:monospace">
+              <div style="width:52px"></div><div>每個字母 = 30 min 時段；字母越多 = 停留越久</div>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,645</div>
+              <div class="tpo-vletters"><div class="tpo-vltr tvl-s">A</div></div>
+              <span class="tpo-vtag tvt-s">單Print ↑</span>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,640</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-va">A</div><div class="tpo-vltr tvl-va">B</div><div class="tpo-vltr tvl-va">C</div>
+              </div>
+              <span class="tpo-vtag tvt-va">VAH</span>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,635</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-n">A</div><div class="tpo-vltr tvl-n">B</div><div class="tpo-vltr tvl-n">C</div><div class="tpo-vltr tvl-n">D</div><div class="tpo-vltr tvl-n">E</div>
+              </div>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,625</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-n">A</div><div class="tpo-vltr tvl-n">B</div><div class="tpo-vltr tvl-n">C</div><div class="tpo-vltr tvl-n">D</div><div class="tpo-vltr tvl-n">E</div><div class="tpo-vltr tvl-n">F</div>
+              </div>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,620</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-poc">A</div><div class="tpo-vltr tvl-poc">B</div><div class="tpo-vltr tvl-poc">C</div><div class="tpo-vltr tvl-poc">D</div><div class="tpo-vltr tvl-poc">E</div><div class="tpo-vltr tvl-poc">F</div><div class="tpo-vltr tvl-poc">G</div>
+              </div>
+              <span class="tpo-vtag tvt-poc">POC ★</span>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,612</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-n">B</div><div class="tpo-vltr tvl-n">C</div><div class="tpo-vltr tvl-n">D</div><div class="tpo-vltr tvl-n">E</div><div class="tpo-vltr tvl-n">F</div>
+              </div>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,600</div>
+              <div class="tpo-vletters">
+                <div class="tpo-vltr tvl-va">C</div><div class="tpo-vltr tvl-va">D</div><div class="tpo-vltr tvl-va">E</div>
+              </div>
+              <span class="tpo-vtag tvt-va">VAL</span>
+            </div>
+            <div class="tpo-vrow">
+              <div class="tpo-vprice">4,582</div>
+              <div class="tpo-vletters"><div class="tpo-vltr tvl-s">D</div></div>
+              <span class="tpo-vtag tvt-s">單Print ↓</span>
+            </div>
+            <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px">
+              <span style="display:flex;align-items:center;gap:5px;font-size:.78em;color:var(--muted)"><span style="width:12px;height:12px;border-radius:2px;background:var(--yellow-light);border:1px solid #d97706;display:inline-block"></span>POC 最長排</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:.78em;color:var(--muted)"><span style="width:12px;height:12px;border-radius:2px;background:var(--green-light);border:1px solid var(--green);display:inline-block"></span>VAH / VAL 邊界</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:.78em;color:var(--muted)"><span style="width:12px;height:12px;border-radius:2px;background:var(--red-light);border:1px solid var(--red);display:inline-block"></span>單Print 快速通過</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title">🎯 四個關鍵概念</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>標記</th><th>定義</th><th>交易意義</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-yellow">POC</span></td>
+                  <td style="font-size:.84em">字母最多那排<br><span style="color:var(--muted)">市場停留最久</span></td>
+                  <td style="font-size:.84em">最強磁吸 / 支撐阻力<br>最重要的參考價位</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">VAH</span></td>
+                  <td style="font-size:.84em">價值區上緣<br><span style="color:var(--muted)">70% 時間在此之下</span></td>
+                  <td style="font-size:.84em">突破 → 上升趨勢延伸<br>被拒 → 反轉向下</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">VAL</span></td>
+                  <td style="font-size:.84em">價值區下緣<br><span style="color:var(--muted)">70% 時間在此之上</span></td>
+                  <td style="font-size:.84em">跌破 → 下跌趨勢延伸<br>守住 → 反彈向上</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-red">單Print</span></td>
+                  <td style="font-size:.84em">只出現一次的字母<br><span style="color:var(--muted)">快速通過、未停留</span></td>
+                  <td style="font-size:.84em">高機率被回補填滿<br>可作為止損參考區</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📐 現價位置 → 市場狀態判讀</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>現價位置</th><th>狀態</th><th>應對</th></tr></thead>
+              <tbody>
+                <tr><td>VA 內部</td><td><span class="badge badge-blue">震盪盤整</span></td><td style="font-size:.84em">等突破，不追趨勢</td></tr>
+                <tr><td>突破 VAH ↑</td><td><span class="badge badge-green">上升延伸</span></td><td style="font-size:.84em">配合 AWE 做多，目標前高</td></tr>
+                <tr><td>跌破 VAL ↓</td><td><span class="badge badge-red">下跌延伸</span></td><td style="font-size:.84em">配合 AWE 做空，目標前低</td></tr>
+                <tr><td>回測 POC</td><td><span class="badge badge-yellow">磁吸反彈</span></td><td style="font-size:.84em">等反彈確認，輕倉參與</td></tr>
+                <tr><td>靠近單Print</td><td><span class="badge badge-purple">缺口填補</span></td><td style="font-size:.84em">容易被填補，不在此追進</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /trd-tpo -->
+
+  <!-- ── Footprint Tab ───────────────────────── -->
+  <div id="trd-footprint" class="tab-panel">
+    <div class="part-label"><span class="part-badge">FP</span>足跡圖 · Footprint Chart</div>
+
+    <div class="insight-grid">
+      <div class="insight info"><strong>核心邏輯：看誰在推動價格</strong>普通 K 棒只告訴你漲跌；Footprint 顯示每個價位有多少<span style="color:var(--red);font-weight:700">賣單（Bid）</span>和<span style="color:var(--green);font-weight:700">買單（Ask）</span>，揭示真實推力來源。</div>
+      <div class="insight warn"><strong>核心公式：Delta = 買單 − 賣單</strong>大量 + 強 Delta = 真方向，追進<br>大量 + 弱 Delta（≈ 0）= 假突破或轉折，觀望</div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-title">📊 Footprint 結構示意圖</div>
+          <div class="fp-viz">
+            <div style="display:flex;gap:6px;margin-bottom:10px;font-size:.75em;color:var(--muted)">
+              <div style="width:48px"></div>
+              <div style="flex:1;text-align:center;color:var(--red);font-weight:600">賣單 Bid</div>
+              <div style="flex:1;text-align:center;color:var(--green);font-weight:600">買單 Ask</div>
+              <div style="width:54px;text-align:right">Delta</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,625</div>
+              <div class="fp-vcell"><div class="fp-vb">180</div><div class="fp-va hi">890</div></div>
+              <div class="fp-vd p">+710</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,622</div>
+              <div class="fp-vcell"><div class="fp-vb">320</div><div class="fp-va hi">1.2K</div></div>
+              <div class="fp-vd p">+880</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,620</div>
+              <div class="fp-vcell"><div class="fp-vb hi">2.1K</div><div class="fp-va hi">2.3K</div></div>
+              <div class="fp-vd p">+200</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,618</div>
+              <div class="fp-vcell"><div class="fp-vb hi">1.8K</div><div class="fp-va">650</div></div>
+              <div class="fp-vd n">−1.1K</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,615</div>
+              <div class="fp-vcell"><div class="fp-vb hi">3.2K</div><div class="fp-va">420</div></div>
+              <div class="fp-vd n">−2.7K</div>
+            </div>
+            <div class="fp-vrow">
+              <div class="fp-vprice">4,612</div>
+              <div class="fp-vcell"><div class="fp-vb">290</div><div class="fp-va">310</div></div>
+              <div class="fp-vd p">+20</div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-family:monospace;font-size:.8em;display:flex;gap:16px">
+              <span><span style="color:var(--muted)">總 Delta：</span><span class="neg" style="font-weight:700">−1.09K</span></span>
+              <span><span style="color:var(--muted)">總量：</span><span style="font-weight:700">14.67K</span></span>
+              <span style="color:var(--muted)">← 量大但 Delta 弱 = 轉折點</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title">🔍 Delta 組合判讀指南</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Delta 狀態</th><th>K 棒方向</th><th>判讀</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-green">強正值</span></td>
+                  <td>↑ 上漲</td>
+                  <td style="font-size:.84em;color:var(--green)">真突破，買方強勢</td>
+                  <td style="font-size:.84em">做多 ✅</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">正值</span></td>
+                  <td>↓ 下跌</td>
+                  <td style="font-size:.84em;color:var(--green)">買方承接，假跌破</td>
+                  <td style="font-size:.84em">考慮做多 ✅</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-red">強負值</span></td>
+                  <td>↓ 下跌</td>
+                  <td style="font-size:.84em;color:var(--red)">真跌破，賣方強勢</td>
+                  <td style="font-size:.84em">做空 ✅</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-red">負值</span></td>
+                  <td>↑ 上漲</td>
+                  <td style="font-size:.84em;color:var(--red)">賣方出貨，假突破</td>
+                  <td style="font-size:.84em">不做多 ❌</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-yellow">接近 0</span></td>
+                  <td>任意</td>
+                  <td style="font-size:.84em;color:var(--yellow)">多空激烈交戰，關鍵轉折</td>
+                  <td style="font-size:.84em">等方向確認</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">⚠️ 最強信號：Delta 背離</div>
+          <div class="insight-grid" style="margin-bottom:0">
+            <div class="insight bad">
+              <strong>❌ 假突破警告</strong>
+              K棒向上 + Delta 負值<br>
+              → 賣方在高位積極出貨<br>
+              → 極大機率回落反轉<br>
+              <strong>不進多單，等待假突破確認</strong>
+            </div>
+            <div class="insight good">
+              <strong>✅ 低接機會</strong>
+              K棒向下 + Delta 正值<br>
+              → 買方在低位積極承接<br>
+              → 可能止跌反彈<br>
+              <strong>考慮做多，等 AWE 確認</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /trd-footprint -->
+
+  <!-- ── Combo Tab ───────────────────────────── -->
+  <div id="trd-combo" class="tab-panel">
+    <div class="part-label"><span class="part-badge">三層</span>三層確認系統 · 3-Layer Confirmation</div>
+
+    <div class="insight info" style="margin-bottom:16px">
+      <strong>策略升級：為什麼要三層確認？</strong>
+      原本 AWE 單獨觸發 → 訊號多但品質不穩。加入 TPO 框架（位置）+ Footprint 確認（力道）後，三個工具同向才進場，訊號減少但勝率顯著提升。
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-title">🗂 三層工具分工</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>工具</th><th>層次</th><th>時間框架</th><th>負責判斷</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-yellow">TPO</span></td>
+                  <td style="font-size:.84em;font-weight:600">戰略層</td>
+                  <td>Daily</td>
+                  <td style="font-size:.84em">今日關鍵價位<br>（POC / VAH / VAL 在哪）</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-blue">AWE</span></td>
+                  <td style="font-size:.84em;font-weight:600">觸發層</td>
+                  <td>30m / 5m</td>
+                  <td style="font-size:.84em">動能方向確認<br>（Awesome Oscillator 翻色）</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">Footprint</span></td>
+                  <td style="font-size:.84em;font-weight:600">執行層</td>
+                  <td>進場 K 棒</td>
+                  <td style="font-size:.84em">當下買賣力道<br>（Delta 方向是否一致）</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔄 進場決策流程（照順序確認）</div>
+          <div class="gflow-step">
+            <div class="gflow-num">1</div>
+            <div class="gflow-body">
+              <h4>TPO 確認位置（戰略層）</h4>
+              <p>查今日 POC / VAH / VAL 在哪<br>確認現價是在 VA 內還是突破 VA 外</p>
+            </div>
+          </div>
+          <div class="gflow-arrow">↓</div>
+          <div class="gflow-step">
+            <div class="gflow-num">2</div>
+            <div class="gflow-body">
+              <h4>AWE 確認動能（觸發層）</h4>
+              <p>等 AWE 翻色（多 = 綠柱，空 = 紅柱）<br>方向要與 TPO 框架一致才算有效訊號</p>
+            </div>
+          </div>
+          <div class="gflow-arrow">↓</div>
+          <div class="gflow-step">
+            <div class="gflow-num">3</div>
+            <div class="gflow-body">
+              <h4>Footprint 確認力道（執行層）</h4>
+              <p>進場 K 棒的 Delta 方向要一致<br>Delta 背離 → 放棄這筆，等下一個</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cond-card long">
+          <h4>✅ 做多三層條件（缺一不可）</h4>
+          <ul class="cond-list">
+            <li>TPO：現價突破 VAH，或從 POC 向上反彈</li>
+            <li>AWE：翻綠（多頭動能出現）</li>
+            <li>Footprint：進場 K 棒 Delta 為正值（買方積極）</li>
+            <li>三層同向 → 進場做多，設 SL 在 POC 下方</li>
+          </ul>
+        </div>
+
+        <div class="cond-card short">
+          <h4>✅ 做空三層條件（缺一不可）</h4>
+          <ul class="cond-list">
+            <li>TPO：現價跌破 VAL，或從 POC 向下反彈</li>
+            <li>AWE：翻紅（空頭動能出現）</li>
+            <li>Footprint：進場 K 棒 Delta 為負值（賣方積極）</li>
+            <li>三層同向 → 進場做空，設 SL 在 POC 上方</li>
+          </ul>
+        </div>
+
+        <div class="cond-card avoid">
+          <h4>⛔ 不進場條件（任一符合 → 跳過）</h4>
+          <ul class="cond-list">
+            <li>價格在 VA 內震盪（POC 上下來回）</li>
+            <li>AWE 有訊號但 Delta 方向相反（背離）</li>
+            <li>成交量極小，Delta 數值不明顯</li>
+            <li>亞盤剛開盤前 30 分鐘（07:00–07:30 假訊號多）</li>
+            <li>4H RSI 處於 bearish 狀態（大週期逆向）</li>
+            <li>DXY RSI 在 30–50 中性偏強區（XAUUSD 承壓）</li>
+          </ul>
+        </div>
+
+        <div class="insight good" style="margin-top:0">
+          <strong>策略加分條件（提升勝率）</strong>
+          HTF alignment ≥ 2/3（60m + 4H + 1D 多數看多）<br>
+          DXY RSI &lt; 30（美元超賣，黃金順風）<br>
+          S1：price &gt; BB 上軌（%B &gt; 0.6）<br>
+          這些條件同時滿足時，歷史勝率可達 60–70%+
+        </div>
+      </div>
+    </div>
+  </div><!-- /trd-combo -->
+
+  <!-- ── Decision Tab ──────────────────────── -->
+  <div id="trd-decision" class="tab-panel">
+    <div class="part-label"><span class="part-badge">決策</span>AWE 訊號出現後快速決策表</div>
+
+    <div class="insight info" style="margin-bottom:16px">
+      <strong>使用方法：</strong>AWE 30m 翻色後 → 立刻查 TPO 位置 + Footprint Delta → 找到對應行執行決策。三個全對才進場，有任何一個不符就等或跳過。
+    </div>
+
+    <div style="margin-bottom:8px;font-size:.88em;font-weight:700;color:var(--green)">▶ AWE 翻多（綠色柱出現）</div>
+    <div class="tbl-wrap" style="margin-bottom:24px">
+      <table>
+        <thead><tr><th>TPO 位置</th><th>Footprint Delta</th><th>決策</th><th>倉位大小</th></tr></thead>
+        <tbody>
+          <tr style="background:#f0fdf4">
+            <td><strong>突破 VAH ↑</strong></td>
+            <td><span class="pos">正值 ✓</span></td>
+            <td><span class="badge badge-green">✅ 做多</span></td>
+            <td style="font-size:.84em;color:var(--green)">最強訊號 → 全倉</td>
+          </tr>
+          <tr style="background:#f0fdf4">
+            <td><strong>POC 向上反彈</strong></td>
+            <td><span class="pos">正值 ✓</span></td>
+            <td><span class="badge badge-green">✅ 做多</span></td>
+            <td style="font-size:.84em">良好訊號 → 正常倉</td>
+          </tr>
+          <tr>
+            <td>VA 內震盪</td>
+            <td><span class="pos">正值 ✓</span></td>
+            <td><span class="badge badge-yellow">⚠ 輕倉</span></td>
+            <td style="font-size:.84em">方向未明 → 縮小部位或等突破</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td>突破 VAH ↑</td>
+            <td><span class="neg">負值 ✗</span></td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--red)">Delta 背離！假突破風險極高</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td>現價在 POC 下方</td>
+            <td>任何</td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--muted)">位置不對，等回測 POC</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td>靠近 VAL</td>
+            <td>任何</td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--muted)">隨時可能跌破，風險過高</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-bottom:8px;font-size:.88em;font-weight:700;color:var(--red)">▶ AWE 翻空（紅色柱出現）</div>
+    <div class="tbl-wrap" style="margin-bottom:24px">
+      <table>
+        <thead><tr><th>TPO 位置</th><th>Footprint Delta</th><th>決策</th><th>倉位大小</th></tr></thead>
+        <tbody>
+          <tr style="background:#fff1f2">
+            <td><strong>跌破 VAL ↓</strong></td>
+            <td><span class="neg">負值 ✓</span></td>
+            <td><span class="badge badge-red">✅ 做空</span></td>
+            <td style="font-size:.84em;color:var(--red)">最強訊號 → 全倉</td>
+          </tr>
+          <tr style="background:#fff1f2">
+            <td><strong>POC 向下反彈</strong></td>
+            <td><span class="neg">負值 ✓</span></td>
+            <td><span class="badge badge-red">✅ 做空</span></td>
+            <td style="font-size:.84em">良好訊號 → 正常倉</td>
+          </tr>
+          <tr>
+            <td>VA 內震盪</td>
+            <td><span class="neg">負值 ✓</span></td>
+            <td><span class="badge badge-yellow">⚠ 輕倉</span></td>
+            <td style="font-size:.84em">方向未明 → 縮小部位或等跌破</td>
+          </tr>
+          <tr style="background:#f0fdf4">
+            <td>跌破 VAL ↓</td>
+            <td><span class="pos">正值 ✗</span></td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--red)">Delta 背離！假跌破風險極高</td>
+          </tr>
+          <tr style="background:#f0fdf4">
+            <td>現價在 POC 上方</td>
+            <td>任何</td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--muted)">位置不對，等回測 POC</td>
+          </tr>
+          <tr style="background:#f0fdf4">
+            <td>靠近 VAH</td>
+            <td>任何</td>
+            <td><span class="badge badge-red">❌ 不進場</span></td>
+            <td style="font-size:.84em;color:var(--muted)">隨時可能突破反彈</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-bottom:8px;font-size:.88em;font-weight:700;color:var(--muted)">▶ 進場後止損 / 止盈參考</div>
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>方向</th><th>止損 SL</th><th>第一目標 TP1</th><th>延伸目標 TP2</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-green">做多</span></td>
+            <td style="font-size:.84em">POC 下方 5–10 點<br>或 VAH 重新跌破</td>
+            <td style="font-size:.84em">VAH（VA 上緣）<br>或前高</td>
+            <td style="font-size:.84em;color:var(--muted)">突破 VAH 後加碼<br>目標前高 / 上方單Print</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">做空</span></td>
+            <td style="font-size:.84em">POC 上方 5–10 點<br>或 VAL 重新站回</td>
+            <td style="font-size:.84em">VAL（VA 下緣）<br>或前低</td>
+            <td style="font-size:.84em;color:var(--muted)">跌破 VAL 後加碼<br>目標前低 / 下方單Print</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="insight good">
+      <strong>快速口訣（三步決策法）</strong><br>
+      <strong>① AWE 翻色</strong>→ <strong>② 看 TPO 位置對不對</strong>→ <strong>③ 看 Delta 方向一不一致</strong><br>
+      三個全部同向 = 進場 ✅ &nbsp;|&nbsp; 有任何一個不同 = 等或跳過 ⛔
+    </div>
+  </div><!-- /trd-decision -->
+
+</div><!-- /main-trading -->
 
 <div class="footer">
   XAUUSD Strategy Hub &nbsp;·&nbsp; 資料截至 2026-04-27 &nbsp;·&nbsp; Generated by Claude Code 2026-05-02

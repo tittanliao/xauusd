@@ -68,7 +68,7 @@ xauusd/
 ├── main.py                 # Fail-pattern 分析入口
 ├── run_experiments.py      # 多單 20 策略實驗入口
 ├── run_short_experiments.py # 空單 20 策略實驗入口
-├── index.html              # 整合報告（多空 + DXY + MTF + Next Action）
+├── index.html              # 整合報告（三大主 Tab：現有策略優化 / 實驗策略測試 / 當沖讀圖指南）
 │
 ├── XAUUSD-Long-S1-AweWithBB/    # S1 右側突破：交易 CSV + report.html + Pine scripts
 ├── XAUUSD-Long-S2A-RSI/         # S2A 左側回測（指標）：原 S2-Hybrid，RSI 超賣/背離
