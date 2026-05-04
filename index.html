@@ -303,80 +303,6 @@ tbody tr:hover td{background:#f8fafc}
       </div>
     </div>
 
-    <div class="insight-grid">
-      <div class="insight good"><strong>✅ DXY RSI &lt; 30 → 最佳做多窗口</strong>美元超賣時三策略勝率均升至 60–75%。可作為加碼條件或進場優先時機。</div>
-      <div class="insight good"><strong>✅ HTF Alignment 3/3 → S1 勝率 ~69%</strong>4H + 1D + 60m 全部看多時，S1 勝率比整體高出 16%。</div>
-      <div class="insight warn"><strong>⚠ S1 BB 位置是關鍵過濾器</strong>S1 在 price > BB 上軌時勝率 77.8%；低於中軌時僅 0–20%。<strong>建議：僅在 BB %B > 0.6 時進場。</strong></div>
-      <div class="insight bad"><strong>❌ S2 的 time_bleed 問題尚未解決</strong>超過 50% 的虧損是持倉超時。加入 48 bar 時間止損可能改善，但未在 Pine Script 驗證。</div>
-      <div class="insight info"><strong>📊 4H bearish 是最大失敗來源</strong>4H RSI bearish 時 S1 immediate_loss 升高，S2 time_bleed 升高。4H 過濾器已在 40 個實驗策略驗證（+1.6% ΔWR）。</div>
-      <div class="insight purple"><strong>🔬 背離分析：樣本不足</strong>30m 資料中只有 17 個 RSI 背離信號（3 個月），統計效力不足。需要更長時間資料才能得出結論。</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🗂 策略分類體系 · Strategy Taxonomy</div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>族群</th><th>策略 ID</th><th>進場類型</th><th>觸發信號</th><th>Entry Label</th><th>當前版本</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><span class="badge badge-green">S1 右側突破</span></td>
-              <td><strong>S1-AweWithBB</strong></td>
-              <td>趨勢確認後順勢進場（突破 BB 上軌）</td>
-              <td>Awesome Oscillator + Bollinger Bands 突破</td>
-              <td><code>S1BB_LE</code></td>
-              <td class="ver-test">V3.6.2 🧪</td>
-            </tr>
-            <tr>
-              <td rowspan="2"><span class="badge badge-blue">S2 左側跌深</span></td>
-              <td><strong>S2A-RSI</strong></td>
-              <td>超賣區逆勢進場（指標觸發）</td>
-              <td>RSI 交叉 / 背離信號</td>
-              <td><code>S2A_LE</code></td>
-              <td class="ver-test">V2.3 🧪</td>
-            </tr>
-            <tr>
-              <td><strong>S2B-Hammer</strong></td>
-              <td>超賣區逆勢進場（K 線觸發）</td>
-              <td>Hammer 錘形蠟燭型態</td>
-              <td><code>S2B_LE</code></td>
-              <td class="ver-test">V2.2 🧪</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="margin-top:10px;font-size:.82em;color:var(--muted)">
-        命名規則：VX.Y = 確認版 &nbsp;·&nbsp; VX.Y.Z 或 VX.(Y+1) 測試中 = 待 TradingView 全歷史驗證 &nbsp;·&nbsp; Exit labels: {prefix}_TP1 / _TP2 / _SL / _TimeWin / _TimeLoss
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🧩 Pine Script 版本狀態</div>
-      <div class="tbl-wrap">
-        <table class="version-row">
-          <thead><tr><th>策略</th><th>版本</th><th>狀態</th><th>新增功能</th><th>下一步測試版</th></tr></thead>
-          <tbody>
-            <tr><td>S1-AweWithBB</td><td>V3.4</td><td><span class="badge badge-blue">原始基準</span></td><td>原始版本</td><td>—</td></tr>
-            <tr><td>S1-AweWithBB</td><td class="ver-confirmed">V3.5</td><td><span class="badge badge-green">確認版</span></td><td>DXY RSI + RSI 動能過濾器（insight toggle）</td><td>V3.6.1</td></tr>
-            <tr><td>S1-AweWithBB</td><td class="ver-test">V3.6.2</td><td><span class="badge badge-yellow">測試中</span></td><td>BB %B ≥ 0.6 過濾器 + 4H HTF RSI 過濾器 + <strong>lookahead_off 重繪修正</strong> + EMA 群組 + 統一 entry label（S1BB_LE）</td><td>→ V3.6（確認後）</td></tr>
-            <tr><td>S2A-RSI</td><td class="ver-confirmed">V2.1</td><td><span class="badge badge-green">確認版</span></td><td>DXY RSI + RSI 動能過濾器（原 S2-Hybrid）</td><td>V2.2</td></tr>
-            <tr><td>S2A-RSI</td><td class="ver-confirmed">V2.2</td><td><span class="badge badge-green">確認版</span></td><td>統一 entry label（S2A_LE） + TP1/TP2 顯示 + EMA 群組 + 架構對齊 S1</td><td>V2.3</td></tr>
-            <tr><td>S2A-RSI</td><td class="ver-test">V2.3</td><td><span class="badge badge-yellow">測試中</span></td><td><strong>時間止損修正</strong>（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2）</td><td>→ V2.3（確認後）</td></tr>
-            <tr><td>S2B-Hammer</td><td class="ver-confirmed">V2.0</td><td><span class="badge badge-green">確認版</span></td><td>原始 + Insight Filters（原 S2-Pullback）</td><td>V2.1</td></tr>
-            <tr><td>S2B-Hammer</td><td class="ver-confirmed">V2.1</td><td><span class="badge badge-green">確認版</span></td><td>統一 entry label（S2B_LE） + EMA 群組 + 架構對齊 S1</td><td>V2.2</td></tr>
-            <tr><td>S2B-Hammer</td><td class="ver-test">V2.2</td><td><span class="badge badge-yellow">測試中</span></td><td><strong>時間止損修正</strong>（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2）</td><td>→ V2.2（確認後）</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="report-links">
-        <a class="report-link" href="XAUUSD-Long-S1-AweWithBB/XAUUSD-Long-S1-AweWithBB-V3.6.2.pine">S1 V3.6.2.pine 🧪</a>
-        <a class="report-link" href="XAUUSD-Long-S1-AweWithBB/XAUUSD-Long-S1-AweWithBB-V3.5.pine">S1 V3.5.pine ✅</a>
-        <a class="report-link" href="XAUUSD-Long-S2A-RSI/XAUUSD-Long-S2A-RSI-V2.3.pine">S2A-RSI V2.3.pine 🧪</a>
-        <a class="report-link" href="XAUUSD-Long-S2B-Hammer/XAUUSD-Long-S2B-Hammer-V2.2.pine">S2B-Hammer V2.2.pine 🧪</a>
-      </div>
-    </div>
-
-    <!-- Part 2: Field Notes Summary -->
-    <div class="part-label"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="grid-3">
 
       <div class="card" style="padding:16px 18px">
@@ -468,6 +394,79 @@ tbody tr:hover td{background:#f8fafc}
       4H RSI-MA 斜率 = RSI-based MA 連續 3 根 4H K 棒的變化量（diff(3)）。&nbsp;
       BB %B = (收盤 − 下軌) ÷ (上軌 − 下軌)，布林帶 = 30m SMA20 ± 2σ。&nbsp;
       DXY = 日線 RSI(14)。
+    </div>
+
+    <div class="part-label"><span class="part-badge">PART 2</span>分析摘要 · Analysis Summary</div>
+
+    <div class="insight-grid">
+      <div class="insight good"><strong>✅ DXY RSI &lt; 30 → 最佳做多窗口</strong>美元超賣時三策略勝率均升至 60–75%。可作為加碼條件或進場優先時機。</div>
+      <div class="insight good"><strong>✅ HTF Alignment 3/3 → S1 勝率 ~69%</strong>4H + 1D + 60m 全部看多時，S1 勝率比整體高出 16%。</div>
+      <div class="insight warn"><strong>⚠ S1 BB 位置是關鍵過濾器</strong>S1 在 price > BB 上軌時勝率 77.8%；低於中軌時僅 0–20%。<strong>建議：僅在 BB %B > 0.6 時進場。</strong></div>
+      <div class="insight info"><strong>📊 S2 time_bleed 已加入時間止損（待驗證）</strong>超過 50% 的虧損是超時持倉。S2A V2.3 / S2B V2.2 已加入 strategy.close() 強制 48-bar 市價平倉，需 TradingView 全歷史驗證。</div>
+      <div class="insight info"><strong>📊 4H bearish 是最大失敗來源</strong>4H RSI &lt; RSI-MA 且斜率向下時，S1 immediate_loss 升至 ~44%，S2 time_bleed 升至 ~33–34%。4H 過濾器已在 40 個實驗策略驗證（+1.6% ΔWR）。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🗂 策略分類體系 · Strategy Taxonomy</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>族群</th><th>策略 ID</th><th>進場類型</th><th>觸發信號</th><th>Entry Label</th><th>當前版本</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">S1 右側突破</span></td>
+              <td><strong>S1-AweWithBB</strong></td>
+              <td>趨勢確認後順勢進場（突破 BB 上軌）</td>
+              <td>Awesome Oscillator + Bollinger Bands 突破</td>
+              <td><code>S1BB_LE</code></td>
+              <td class="ver-test">V3.6.2 🧪</td>
+            </tr>
+            <tr>
+              <td rowspan="2"><span class="badge badge-blue">S2 左側跌深</span></td>
+              <td><strong>S2A-RSI</strong></td>
+              <td>超賣區逆勢進場（指標觸發）</td>
+              <td>RSI 交叉 / 背離信號</td>
+              <td><code>S2A_LE</code></td>
+              <td class="ver-test">V2.3 🧪</td>
+            </tr>
+            <tr>
+              <td><strong>S2B-Hammer</strong></td>
+              <td>超賣區逆勢進場（K 線觸發）</td>
+              <td>Hammer 錘形蠟燭型態</td>
+              <td><code>S2B_LE</code></td>
+              <td class="ver-test">V2.2 🧪</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:.82em;color:var(--muted)">
+        命名規則：VX.Y = 確認版 &nbsp;·&nbsp; VX.Y.Z 或 VX.(Y+1) 測試中 = 待 TradingView 全歷史驗證 &nbsp;·&nbsp; Exit labels: {prefix}_TP1 / _TP2 / _SL / _TimeWin / _TimeLoss
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧩 Pine Script 版本狀態</div>
+      <div class="tbl-wrap">
+        <table class="version-row">
+          <thead><tr><th>策略</th><th>版本</th><th>狀態</th><th>新增功能</th><th>下一步測試版</th></tr></thead>
+          <tbody>
+            <tr><td>S1-AweWithBB</td><td>V3.4</td><td><span class="badge badge-blue">原始基準</span></td><td>原始版本</td><td>—</td></tr>
+            <tr><td>S1-AweWithBB</td><td class="ver-confirmed">V3.5</td><td><span class="badge badge-green">確認版</span></td><td>DXY RSI + RSI 動能過濾器（insight toggle）</td><td>V3.6.1</td></tr>
+            <tr><td>S1-AweWithBB</td><td class="ver-test">V3.6.2</td><td><span class="badge badge-yellow">測試中</span></td><td>BB %B ≥ 0.6 過濾器 + 4H HTF RSI 過濾器 + <strong>lookahead_off 重繪修正</strong> + EMA 群組 + 統一 entry label（S1BB_LE）</td><td>→ V3.6（確認後）</td></tr>
+            <tr><td>S2A-RSI</td><td class="ver-confirmed">V2.1</td><td><span class="badge badge-green">確認版</span></td><td>DXY RSI + RSI 動能過濾器（原 S2-Hybrid）</td><td>V2.2</td></tr>
+            <tr><td>S2A-RSI</td><td class="ver-confirmed">V2.2</td><td><span class="badge badge-green">確認版</span></td><td>統一 entry label（S2A_LE） + TP1/TP2 顯示 + EMA 群組 + 架構對齊 S1</td><td>V2.3</td></tr>
+            <tr><td>S2A-RSI</td><td class="ver-test">V2.3</td><td><span class="badge badge-yellow">測試中</span></td><td><strong>時間止損修正</strong>（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2）</td><td>→ V2.3（確認後）</td></tr>
+            <tr><td>S2B-Hammer</td><td class="ver-confirmed">V2.0</td><td><span class="badge badge-green">確認版</span></td><td>原始 + Insight Filters（原 S2-Pullback）</td><td>V2.1</td></tr>
+            <tr><td>S2B-Hammer</td><td class="ver-confirmed">V2.1</td><td><span class="badge badge-green">確認版</span></td><td>統一 entry label（S2B_LE） + EMA 群組 + 架構對齊 S1</td><td>V2.2</td></tr>
+            <tr><td>S2B-Hammer</td><td class="ver-test">V2.2</td><td><span class="badge badge-yellow">測試中</span></td><td><strong>時間止損修正</strong>（strategy.close() 保證市價平倉）+ 4H HTF RSI 過濾器（同 S1 V3.6.2）</td><td>→ V2.2（確認後）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="report-links">
+        <a class="report-link" href="XAUUSD-Long-S1-AweWithBB/XAUUSD-Long-S1-AweWithBB-V3.6.2.pine">S1 V3.6.2.pine 🧪</a>
+        <a class="report-link" href="XAUUSD-Long-S1-AweWithBB/XAUUSD-Long-S1-AweWithBB-V3.5.pine">S1 V3.5.pine ✅</a>
+        <a class="report-link" href="XAUUSD-Long-S2A-RSI/XAUUSD-Long-S2A-RSI-V2.3.pine">S2A-RSI V2.3.pine 🧪</a>
+        <a class="report-link" href="XAUUSD-Long-S2B-Hammer/XAUUSD-Long-S2B-Hammer-V2.2.pine">S2B-Hammer V2.2.pine 🧪</a>
+      </div>
     </div>
 
     <!-- Part 3: History -->
