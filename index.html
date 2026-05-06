@@ -77,6 +77,19 @@ a:hover{text-decoration:underline}
 .sub-tab:hover{color:var(--primary)}
 .sub-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-light)}
 
+/* ── Dataset Toggle ─────────────────────────────────────── */
+.ds-toggle-bar{display:flex;align-items:center;gap:10px;padding:8px 24px;background:#f1f5f9;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ds-toggle-label{font-size:.8em;font-weight:600;color:var(--muted);white-space:nowrap}
+.ds-toggle{display:flex;gap:4px}
+.ds-btn{padding:4px 14px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:.8em;background:white;color:var(--text2);transition:all .15s;white-space:nowrap}
+.ds-btn:hover{border-color:var(--primary);color:var(--primary)}
+.ds-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:600}
+.ds-period{font-size:.75em;color:var(--muted);font-style:italic}
+.wr-hi{background:#d1fae5;font-weight:700;color:#064e3b}
+.wr-ok{background:#fef3c7;font-weight:700;color:#78350f}
+.wr-lo{background:#fee2e2;font-weight:700;color:#7f1d1d}
+.wr-na{color:var(--muted);font-style:italic}
+
 /* ── Sections / Tabs ─────────────────────────────────────── */
 .main-section{display:none}
 .main-section.active{display:block}
@@ -807,6 +820,17 @@ tbody tr:hover td{background:#f8fafc}
 
 <!-- ══ SECTION B: 實驗策略 ════════════════════════════════════ -->
 <div id="main-experiments" class="main-section">
+  <!-- Dataset toggle -->
+  <div class="ds-toggle-bar">
+    <span class="ds-toggle-label">資料集：</span>
+    <div class="ds-toggle">
+      <button class="ds-btn" onclick="switchDS('short',this)">短期 3.5 月</button>
+      <button class="ds-btn active" onclick="switchDS('long',this)">長期 7 年</button>
+    </div>
+    <span class="ds-period" data-ds="short" style="display:none">2026-01-21 ~ 2026-04-27</span>
+    <span class="ds-period" data-ds="long">2024-03-07 ~ 2026-05-06（30m 25,456 根）</span>
+  </div>
+
   <div class="subnav">
     <button class="sub-tab active" onclick="showTab('exp','overview',this)">綜合對比</button>
     <button class="sub-tab" onclick="showTab('exp','long',this)">多單 Long (E01–E20)</button>
@@ -817,43 +841,84 @@ tbody tr:hover td{background:#f8fafc}
   <div id="exp-overview" class="tab-panel active">
     <div class="part-label"><span class="part-badge">PART 1</span>精華重點 · Key Findings</div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">📈 多單 Top-3（E01–E20，30m 資料）</div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>#</th><th>策略</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td><strong>E03 MACD Signal</strong></td><td class="pos">45.1%</td><td>1.643</td><td class="pos">+9.0%</td></tr>
-              <tr><td>2</td><td><strong>E12 BB Squeeze Break</strong></td><td class="pos">39.8%</td><td>1.337</td><td class="pos">+8.8%</td></tr>
-              <tr><td>3</td><td>E16 ATR Vol Break</td><td>36.4%</td><td>1.124</td><td class="pos">+3.9%</td></tr>
-            </tbody>
-          </table>
+    <!-- SHORT 3.5m -->
+    <div data-ds="short" style="display:none">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📈 多單 Top-3（E01–E20，3.5 個月 30m）</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>策略</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><strong>E03 MACD Signal</strong></td><td class="wr-ok">45.1%</td><td>1.643</td><td class="pos">+9.0%</td></tr>
+                <tr><td>2</td><td><strong>E12 BB Squeeze Break</strong></td><td class="wr-lo">39.8%</td><td>1.337</td><td class="pos">+8.8%</td></tr>
+                <tr><td>3</td><td>E16 ATR Vol Break</td><td class="wr-lo">36.4%</td><td>1.124</td><td class="pos">+3.9%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="report-links"><a class="report-link" href="XAUUSD-Long-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine">ALL_Long.pine →</a></div>
         </div>
-        <div class="report-links"><a class="report-link" href="XAUUSD-Long-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine">ALL_Long.pine →</a></div>
+        <div class="card">
+          <div class="card-title">📉 空單 Top-3（S01–S20，3.5 個月 30m）</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>策略</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><strong>S19 Bearish Engulf</strong></td><td class="wr-lo">42.5%</td><td>1.507</td><td class="pos">+12.4%</td></tr>
+                <tr><td>2</td><td><strong>S13 BB Basis Reject</strong></td><td class="wr-lo">42.0%</td><td>1.450</td><td class="pos">+9.0%</td></tr>
+                <tr><td>3</td><td>S12 BB Squeeze Break</td><td class="wr-lo">39.0%</td><td>1.252</td><td class="pos">+8.0%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="report-links"><a class="report-link" href="XAUUSD-Short-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine">ALL_Short.pine →</a></div>
+        </div>
       </div>
-
-      <div class="card">
-        <div class="card-title">📉 空單 Top-3（S01–S20，同期資料）</div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>#</th><th>策略</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td><strong>S19 Bearish Engulf</strong></td><td class="pos">42.5%</td><td>1.507</td><td class="pos">+12.4%</td></tr>
-              <tr><td>2</td><td><strong>S13 BB Basis Reject</strong></td><td class="pos">42.0%</td><td>1.450</td><td class="pos">+9.0%</td></tr>
-              <tr><td>3</td><td>S12 BB Squeeze Break</td><td>39.0%</td><td>1.252</td><td class="pos">+8.0%</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="report-links"><a class="report-link" href="XAUUSD-Short-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine">ALL_Short.pine →</a></div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>✅ 空單此期間優於多單</strong>XAUUSD 2026 初有下行趨勢<br>S19 +12.4% 超越多單最佳 E03 +9.0%<br>→ BB 類策略多空雙向均有效</div>
+        <div class="insight good"><strong>✅ HTF 4H 過濾效果</strong>空單跳過 4H bullish：<strong>+4.1% ΔWR，16/20 改善</strong><br>多單跳過 4H bearish：+1.6% ΔWR，11/20 改善<br>→ 空單受益明顯大於多單</div>
+        <div class="insight warn"><strong>⚠ 資料期間短（3.5 個月）</strong>樣本量有限，多數策略 20–100 筆<br>→ 切換至「長期 7 年」驗證系統性 Edge</div>
+        <div class="insight info"><strong>📊 下一步建議</strong>1. TradingView 驗證 E03 + S19（Pine 已備妥）<br>2. HTF 4H 過濾器加入合併版 Pine<br>3. 設計多空組合策略（E03 多 + S19 空）</div>
       </div>
     </div>
 
-    <div class="insight-grid">
-      <div class="insight good"><strong>✅ HTF 4H 過濾器驗證結果</strong>空單過濾（跳過 4H bullish）：<strong>+4.1% ΔWR，16/20 改善</strong><br>多單過濾（跳過 4H bearish）：+1.6% ΔWR，11/20 改善<br>→ 空單效益是多單的 2.5 倍</div>
-      <div class="insight good"><strong>✅ BB 策略多空雙向有效</strong>E12 BB Squeeze（多單 #2）和 S12 BB Squeeze（空單 #3）均有效<br>S13 BB Basis Reject（空單 #2）<br>→ BB 類策略在此期間表現穩定</div>
-      <div class="insight warn"><strong>⚠ 此期間空單 &gt; 多單</strong>空單整體表現優於多單（S19 +12.4% vs E03 +9.0%）<br>→ 這段時間 XAUUSD 可能在整理或下行期</div>
-      <div class="insight info"><strong>📊 下一步建議</strong>1. 在 TradingView 驗證 E03 + S19（Pine Script 已備妥）<br>2. 將 HTF 4H 過濾器加入 ALL_Long/Short Pine 合併版<br>3. 考慮設計多空組合策略（E03 多 + S19 空）</div>
+    <!-- LONG 2yr -->
+    <div data-ds="long">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📈 多單 Top-3（E01–E20，2 年 30m）</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>策略</th><th>筆數</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><strong>E12 BB Squeeze Break</strong></td><td>514</td><td class="wr-ok">47.1%</td><td>1.543</td><td class="pos">+71.7%</td></tr>
+                <tr><td>2</td><td><strong>E03 MACD Signal</strong></td><td>491</td><td class="wr-ok">45.0%</td><td>1.430</td><td class="pos">+55.8%</td></tr>
+                <tr><td>3</td><td>E02 Triple EMA</td><td>583</td><td class="wr-lo">43.1%</td><td>1.352</td><td class="pos">+56.6%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="report-links"><a class="report-link" href="XAUUSD-Long-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Long-Experiments/pine/ALL_Long_Strategies.pine">ALL_Long.pine →</a></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📉 空單 Top-3（S01–S20，2 年 30m）</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>策略</th><th>筆數</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>S20 Confluence</td><td>3</td><td class="wr-lo">33.3%</td><td class="neg">1.000</td><td>0.0%</td></tr>
+                <tr><td>2</td><td>S15 Inside Bar Break</td><td>404</td><td class="wr-lo">36.9%</td><td class="neg">0.999</td><td class="neg">-0.1%</td></tr>
+                <tr><td>3</td><td>S12 BB Squeeze Break</td><td>499</td><td class="wr-lo">34.1%</td><td class="neg">0.910</td><td class="neg">-14.0%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="report-links"><a class="report-link" href="XAUUSD-Short-Experiments/report.html">完整報告 →</a><a class="report-link" href="XAUUSD-Short-Experiments/pine/ALL_Short_Strategies.pine">ALL_Short.pine →</a></div>
+        </div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>✅ 多單策略 2 年全周期驗證</strong>E12 BB Squeeze PF=1.543，+71.7%（n=514）<br>E03 MACD PF=1.430，+55.8%（n=491）<br>→ 系統性 Edge 確立，統計效力充足</div>
+        <div class="insight bad"><strong>🚨 空單策略 2 年全部虧損</strong>20 個空單策略 PF 全數 &lt; 1.0<br>最佳 S20 PF=1.000（n=3，樣本過小）<br>→ 空單系統性 Edge 不存在</div>
+        <div class="insight warn"><strong>⚠ 空單 3.5m 表現是偏好期幻象</strong>S19 3.5m +12.4%，2 年全虧損<br>→ 2026 初 XAUUSD 下行趨勢驅動<br>趨勢結束後空單信號失效</div>
+        <div class="insight info"><strong>📊 2 年驗證結論</strong>E12 BB Squeeze 升至 #1（3.5m 時是 E03）<br>多單 E12 + E03 雙線確認更可靠<br>空單需趨勢過濾才能運作</div>
+      </div>
     </div>
 
     <!-- Part 2 -->
@@ -869,7 +934,7 @@ tbody tr:hover td{background:#f8fafc}
               <td class="td-purpose">系統性測試 20 種技術信號，找出最有潛力的多單框架</td>
               <td class="td-action">建立 experiments/ 完整框架：engine.py + strategies.py × 20 + runner.py + report.py</td>
               <td class="td-files">experiments/ 全套<br>run_experiments.py<br>Long-Experiments/report.html</td>
-              <td class="td-memo"><strong>E03 MACD Signal 最佳（PF 1.643）</strong>E12 BB Squeeze 次之；建議 TradingView 全歷史驗證</td>
+              <td class="td-memo"><strong>E03 MACD Signal 最佳（PF 1.643，3.5m）</strong>E12 BB Squeeze 次之；建議 TradingView 全歷史驗證</td>
             </tr>
             <tr>
               <td class="td-date">2026-04-27</td>
@@ -877,7 +942,7 @@ tbody tr:hover td{background:#f8fafc}
               <td class="td-purpose">探索空單信號，提供多空雙向操作選擇</td>
               <td class="td-action">建立 strategies_short.py（反向信號）+ run_short_experiments.py</td>
               <td class="td-files">strategies_short.py<br>Short-Experiments/report.html<br>Pine ×20</td>
-              <td class="td-memo"><strong>S19 Bearish Engulf +12.4% 最佳</strong>此期間空單整體優於多單；BB 類策略多空均有效</td>
+              <td class="td-memo"><strong>S19 Bearish Engulf +12.4% 最佳（3.5m）</strong>此期間空單整體優於多單；BB 類策略多空均有效</td>
             </tr>
             <tr>
               <td class="td-date">2026-04-29</td>
@@ -885,7 +950,7 @@ tbody tr:hover td{background:#f8fafc}
               <td class="td-purpose">在 TradingView 不換腳本就能切換 20 個策略，方便回測</td>
               <td class="td-action">建立 ALL_Long/Short_Strategies.pine；用 input.string() 下拉實作 20 策略切換</td>
               <td class="td-files">ALL_Long_Strategies.pine<br>ALL_Short_Strategies.pine</td>
-              <td class="td-memo"><strong>下拉選單設計</strong>TradingView 一個腳本切換全部策略；解決每次換腳本會失去設定的問題</td>
+              <td class="td-memo"><strong>下拉選單設計</strong>TradingView 一個腳本切換全部策略；解決每次換腳本失去設定的問題</td>
             </tr>
             <tr>
               <td class="td-date">2026-05-01</td>
@@ -894,6 +959,14 @@ tbody tr:hover td{background:#f8fafc}
               <td class="td-action">engine.py 加入 htf_filter 參數（numpy searchsorted O(log n)）；重跑 40 策略；空單跳過 4H bullish</td>
               <td class="td-files">engine.py 更新<br>runner.py 更新<br>report.html ×2 更新</td>
               <td class="td-memo"><strong>空單 +4.1% ΔWR（16/20 改善）</strong>4H bullish 做空是最大虧損來源；多單效果較小（+1.6%）</td>
+            </tr>
+            <tr>
+              <td class="td-date">2026-05-06</td>
+              <td class="td-topic"><span class="tag tag-analysis">分析</span>全周期 2 年驗證（25K bars）</td>
+              <td class="td-purpose">驗證短期績效是否具系統性 Edge，排除偏好市場期偏差</td>
+              <td class="td-action">重跑 40 策略（2024-03-07 至 2026-05-06，25,456 根 30m K 棒）；多空雙向對比</td>
+              <td class="td-files">run_experiments.py（2yr 資料）<br>run_short_experiments.py（2yr）</td>
+              <td class="td-memo"><strong>🚨 重大發現：空單 2 年全部虧損</strong>多單 E12 BB Squeeze 升至 #1（PF 1.543，+71.7%，n=514）；E03 MACD 次之（PF 1.430）；空單 20 個策略 PF 均 &lt; 1.0，3.5m 空單績效為下行趨勢的偏好期幻象</td>
             </tr>
           </tbody>
         </table>
@@ -905,17 +978,47 @@ tbody tr:hover td{background:#f8fafc}
   <div id="exp-long" class="tab-panel">
     <div class="part-label"><span class="part-badge">PART 1</span>多單實驗精華重點</div>
 
-    <div class="grid-4">
-      <div class="metric-card card"><div class="metric-label">最佳策略</div><div class="metric-val" style="font-size:1em">E03 MACD Signal</div><div class="metric-sub">Momentum 組</div></div>
-      <div class="metric-card card"><div class="metric-label">最佳 PF</div><div class="metric-val green">1.643</div><div class="metric-sub">E03</div></div>
-      <div class="metric-card card"><div class="metric-label">最佳淨盈虧%</div><div class="metric-val green">+9.0%</div><div class="metric-sub">3 個月</div></div>
-      <div class="metric-card card"><div class="metric-label">HTF 過濾後 ΔWR</div><div class="metric-val green">+1.6%</div><div class="metric-sub">11/20 改善</div></div>
+    <!-- SHORT 3.5m -->
+    <div data-ds="short" style="display:none">
+      <div class="grid-4">
+        <div class="metric-card card"><div class="metric-label">最佳策略</div><div class="metric-val" style="font-size:1em">E03 MACD Signal</div><div class="metric-sub">Momentum 組</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳 PF</div><div class="metric-val green">1.643</div><div class="metric-sub">E03（n=51）</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳淨盈虧%</div><div class="metric-val green">+9.0%</div><div class="metric-sub">3.5 個月</div></div>
+        <div class="metric-card card"><div class="metric-label">HTF 過濾後 ΔWR</div><div class="metric-val green">+1.6%</div><div class="metric-sub">11/20 改善</div></div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>✅ E03 MACD Signal 領先</strong>Momentum 組策略，51 筆交易<br>勝率 45.1%，PF 1.643，淨盈虧 +9.0%<br>→ 最優先在 TradingView 全歷史驗證</div>
+        <div class="insight info"><strong>📊 HTF 4H 過濾效果</strong>多單跳過 4H bearish 進場後：<br>平均 +1.6% ΔWR，11/20 策略改善<br>→ 效果比空單小，但仍有價值</div>
+        <div class="insight warn"><strong>⚠ 資料期間短（3.5 個月）</strong>30m 資料僅 2026-01-21 起，約 66 交易日<br>多數策略交易筆數 20–100 筆<br>→ 需長歷史驗證才有統計效力</div>
+      </div>
     </div>
 
-    <div class="insight-grid">
-      <div class="insight good"><strong>✅ E03 MACD Signal 領先</strong>Momentum 組策略，51 筆交易<br>勝率 45.1%，PF 1.643，淨盈虧 +9.0%<br>→ 最優先在 TradingView 全歷史驗證</div>
-      <div class="insight info"><strong>📊 HTF 4H 過濾效果</strong>多單跳過 4H bearish 進場後：<br>平均 +1.6% ΔWR，11/20 策略改善<br>→ 效果比空單小，但仍有價值</div>
-      <div class="insight warn"><strong>⚠ 資料期間短（3 個月）</strong>30m 資料僅從 2026-01-21 起，約 66 個交易日<br>多數策略交易筆數 20–100 筆<br>→ 需 TradingView 長歷史驗證才有統計效力</div>
+    <!-- LONG 2yr -->
+    <div data-ds="long">
+      <div class="grid-4">
+        <div class="metric-card card"><div class="metric-label">最佳策略</div><div class="metric-val" style="font-size:1em">E12 BB Squeeze</div><div class="metric-sub">BB 組</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳 PF</div><div class="metric-val green">1.543</div><div class="metric-sub">E12（n=514）</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳淨盈虧%</div><div class="metric-val green">+71.7%</div><div class="metric-sub">2 年全周期</div></div>
+        <div class="metric-card card"><div class="metric-label">Top-3 全部獲利</div><div class="metric-val green">PF &gt; 1.3</div><div class="metric-sub">E12 / E03 / E02</div></div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>✅ E12 BB Squeeze 升至 #1</strong>BB 組策略，514 筆交易（大樣本）<br>勝率 47.1%，PF 1.543，淨盈虧 +71.7%<br>→ 2 年全周期 Edge 確立</div>
+        <div class="insight good"><strong>✅ E03 MACD 穩居 #2</strong>491 筆，WR 45.0%，PF 1.430，+55.8%<br>3.5m 時是 #1，2 年時是 #2<br>→ 兩個時期均表現優異，可信度高</div>
+        <div class="insight info"><strong>📊 E02 Triple EMA 新進 Top-3</strong>583 筆，WR 43.1%，PF 1.352，+56.6%<br>趨勢型策略需要較長資料才能體現<br>→ 長期資料揭露的新機會</div>
+        <div class="insight good"><strong>✅ 系統性 Edge 確認</strong>E12 + E03 雙線確認，n=514/491<br>統計效力充足（遠超 30 筆門檻）<br>→ 可信賴的系統性多單 Edge</div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>#</th><th>策略</th><th>分組</th><th>筆數</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>E12 BB Squeeze Break</strong></td><td>BB</td><td>514</td><td class="wr-ok">47.1%</td><td>1.543</td><td class="pos">+71.7%</td></tr>
+            <tr><td>2</td><td><strong>E03 MACD Signal</strong></td><td>Momentum</td><td>491</td><td class="wr-ok">45.0%</td><td>1.430</td><td class="pos">+55.8%</td></tr>
+            <tr><td>3</td><td>E02 Triple EMA</td><td>Trend</td><td>583</td><td class="wr-lo">43.1%</td><td>1.352</td><td class="pos">+56.6%</td></tr>
+            <tr><td>4</td><td>E13 BB Basis Walk</td><td>BB</td><td>499</td><td class="wr-lo">43.9%</td><td>1.341</td><td class="pos">+46.0%</td></tr>
+            <tr><td>5</td><td>E16 ATR Vol Break</td><td>Breakout</td><td>595</td><td class="wr-lo">43.4%</td><td>1.334</td><td class="pos">+54.7%</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="report-links">
@@ -928,17 +1031,48 @@ tbody tr:hover td{background:#f8fafc}
   <div id="exp-short" class="tab-panel">
     <div class="part-label"><span class="part-badge">PART 1</span>空單實驗精華重點</div>
 
-    <div class="grid-4">
-      <div class="metric-card card"><div class="metric-label">最佳策略</div><div class="metric-val" style="font-size:1em">S19 Bearish Engulf</div><div class="metric-sub">Pattern 組</div></div>
-      <div class="metric-card card"><div class="metric-label">最佳 PF</div><div class="metric-val green">1.507</div><div class="metric-sub">S19</div></div>
-      <div class="metric-card card"><div class="metric-label">最佳淨盈虧%</div><div class="metric-val green">+12.4%</div><div class="metric-sub">3 個月</div></div>
-      <div class="metric-card card"><div class="metric-label">HTF 過濾後 ΔWR</div><div class="metric-val green">+4.1%</div><div class="metric-sub">16/20 改善</div></div>
+    <!-- SHORT 3.5m -->
+    <div data-ds="short" style="display:none">
+      <div class="grid-4">
+        <div class="metric-card card"><div class="metric-label">最佳策略</div><div class="metric-val" style="font-size:1em">S19 Bearish Engulf</div><div class="metric-sub">Pattern 組</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳 PF</div><div class="metric-val green">1.507</div><div class="metric-sub">S19（n=87）</div></div>
+        <div class="metric-card card"><div class="metric-label">最佳淨盈虧%</div><div class="metric-val green">+12.4%</div><div class="metric-sub">3.5 個月</div></div>
+        <div class="metric-card card"><div class="metric-label">HTF 過濾後 ΔWR</div><div class="metric-val green">+4.1%</div><div class="metric-sub">16/20 改善</div></div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>✅ S19 Bearish Engulf 領先</strong>Pattern 組策略，87 筆交易<br>勝率 42.5%，PF 1.507，淨盈虧 +12.4%<br>→ 此期間最強策略（多空均包含）</div>
+        <div class="insight good"><strong>✅ HTF 過濾效果最顯著</strong>空單跳過 4H bullish 進場後：<br><strong>平均 +4.1% ΔWR，16/20 策略改善</strong><br>→ 過濾逆勢空單效果明顯優於多單</div>
+        <div class="insight info"><strong>📊 BB 類策略穩定</strong>S13 BB Basis Reject（+9.0%）<br>S12 BB Squeeze Break（+8.0%）<br>→ BB 策略在此期間多空均表現良好</div>
+        <div class="insight warn"><strong>⚠ 注意：切換至 7 年查看全周期</strong>此 3.5 個月正值 XAUUSD 下行期<br>→ 空單長期是否具 Edge？切換查看</div>
+      </div>
     </div>
 
-    <div class="insight-grid">
-      <div class="insight good"><strong>✅ S19 Bearish Engulf 領先</strong>Pattern 組策略，87 筆交易<br>勝率 42.5%，PF 1.507，淨盈虧 +12.4%<br>→ 此期間最強策略（多空均包含）</div>
-      <div class="insight good"><strong>✅ HTF 過濾效果最顯著</strong>空單跳過 4H bullish 進場後：<br><strong>平均 +4.1% ΔWR，16/20 策略改善</strong><br>→ 過濾逆勢空單效果明顯優於多單</div>
-      <div class="insight info"><strong>📊 BB 類策略穩定</strong>S13 BB Basis Reject（+9.0%）<br>S12 BB Squeeze Break（+8.0%）<br>→ BB 策略在此期間多空均表現良好</div>
+    <!-- LONG 2yr -->
+    <div data-ds="long">
+      <div class="grid-4">
+        <div class="metric-card card"><div class="metric-label">最佳 PF（2 年）</div><div class="metric-val neg">1.000</div><div class="metric-sub">S20（n=3，無效）</div></div>
+        <div class="metric-card card"><div class="metric-label">最大樣本 PF</div><div class="metric-val neg">0.999</div><div class="metric-sub">S15（n=404）</div></div>
+        <div class="metric-card card"><div class="metric-label">PF &gt; 1.0 策略數</div><div class="metric-val neg">0 / 20</div><div class="metric-sub">全部虧損</div></div>
+        <div class="metric-card card"><div class="metric-label">結論</div><div class="metric-val neg" style="font-size:.85em">偏好期幻象</div><div class="metric-sub">Edge 不存在</div></div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight bad"><strong>🚨 空單策略 2 年全部虧損</strong>20 個空單策略 PF 均 &lt; 1.0<br>最佳 S20 PF=1.000（n=3，統計無效）<br>最大樣本 S15 PF=0.999（n=404，略虧）<br>→ 空單系統性 Edge 不存在</div>
+        <div class="insight bad"><strong>🚨 3.5m 績效為偏好期幻象</strong>空單 S19 3.5m +12.4%，2 年全虧損<br>→ 由 2026 初 XAUUSD 下行趨勢驅動<br>趨勢結束後空單信號全數失效</div>
+        <div class="insight warn"><strong>⚠ 空單操作建議</strong>現有空單策略不具長期 Edge<br>需趨勢確認（EMA200 方向 + 市場結構）<br>→ 明確下行趨勢確認前暫停系統性空單</div>
+        <div class="insight info"><strong>📊 空單下一步研究方向</strong>加入趨勢確認條件（EMA200 方向）<br>僅在下行趨勢中啟動空單策略<br>→ 解決「趨勢末端做空」的核心問題</div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>#</th><th>策略</th><th>分組</th><th>筆數</th><th>勝率</th><th>PF</th><th>淨盈虧%</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>S20 Confluence</td><td>Confluence</td><td>3</td><td class="wr-lo">33.3%</td><td class="neg">1.000</td><td>0.0%</td></tr>
+            <tr><td>2</td><td>S15 Inside Bar Break</td><td>Breakdown</td><td>404</td><td class="wr-lo">36.9%</td><td class="neg">0.999</td><td class="neg">-0.1%</td></tr>
+            <tr><td>3</td><td>S12 BB Squeeze Break</td><td>BB</td><td>499</td><td class="wr-lo">34.1%</td><td class="neg">0.910</td><td class="neg">-14.0%</td></tr>
+            <tr><td>4</td><td>S05 ADX EMA Reject</td><td>Trend</td><td>130</td><td class="wr-lo">33.8%</td><td class="neg">0.897</td><td class="neg">-4.3%</td></tr>
+            <tr><td>5</td><td>S16 ATR Vol Break</td><td>Breakdown</td><td>566</td><td class="wr-lo">34.1%</td><td class="neg">0.883</td><td class="neg">-21.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="report-links">
@@ -1449,6 +1583,15 @@ tbody tr:hover td{background:#f8fafc}
 
 <!-- ══ SECTION D: 深度分析 ════════════════════════════════════ -->
 <div id="main-deep" class="main-section">
+  <div class="ds-toggle-bar">
+    <span class="ds-toggle-label">資料集切換：</span>
+    <div class="ds-toggle">
+      <button class="ds-btn" onclick="switchDS('short',this)">📊 短期 3.5 月</button>
+      <button class="ds-btn active" onclick="switchDS('long',this)">📈 長期 7 年</button>
+    </div>
+    <span class="ds-period" data-ds="short" style="display:none">2026-01-21 ~ 2026-04-27 ｜ S1: 504筆 / S2A: 161筆 / S2B: 200筆</span>
+    <span class="ds-period" data-ds="long">2019 ~ 2026-05-06 ｜ S1: 1,097筆 / S2A: 450筆 / S2B: 560筆</span>
+  </div>
   <div class="subnav">
     <button class="sub-tab active" onclick="showTab('deep','overview',this)">分析摘要</button>
     <button class="sub-tab" onclick="showTab('deep','step1',this)">S2B 垂頭陷阱</button>
@@ -1456,207 +1599,324 @@ tbody tr:hover td{background:#f8fafc}
     <button class="sub-tab" onclick="showTab('deep','step3',this)">Time-Bleed</button>
   </div>
 
-  <!-- Deep Overview -->
+  <!-- ── Deep Overview ─────────────────────────────────── -->
   <div id="deep-overview" class="tab-panel active">
-    <div class="part-label"><span class="part-badge">KEY FINDINGS</span>深度分析精華 · 2026-05-06</div>
 
-    <div class="insight-grid">
-      <div class="insight good">
-        <strong>S1 最高信心組合：BB≥0.8 + 4H Bullish = 72.9% 勝率（n=144）</strong>
-        S1 訊號出現時，BB%B≥0.8 且 4H bullish，歷史勝率 72.9%。前次 90.9% 是 n=11 的小樣本偏差，現以 7 年資料確認，72.9% 仍是所有組合中最高且樣本可靠。
+    <!-- SHORT -->
+    <div data-ds="short" style="display:none">
+      <div class="part-label"><span class="part-badge">KEY FINDINGS</span>深度分析精華 · 短期 3.5 月（2026-01~04）</div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>S1 最高信心：BB≥0.8 + 4H bullish = 71.4%（n=56）</strong>短期資料中的高信心組合。注意：此期間 S1 整體勝率 53.2% 高於長期基準，可能有市場順風偏差。</div>
+        <div class="insight warn"><strong>S2B 垂頭陷阱：WR=44.1%（n=34），0 false-breakout</strong>高位多單稍優於基準（43.8%），0 false_breakout 確認做空不會先被反彈掃止損。短期樣本量充足，結論可參考。</div>
+        <div class="insight info"><strong>S2A time_bleed：51.6%（48/93 虧損）</strong>短期 time_bleed 率較低，4H neutral 時 61.5%（最危險），bearish 時 46.6%。持倉超 12h 考慮手動平。</div>
+        <div class="insight info"><strong>S2B time_bleed：53.6%（60/112 虧損），4H 狀態無差異</strong>4H bearish/bullish/neutral 均約 53–55%，4H 過濾無效。需研究時段因素。</div>
       </div>
-      <div class="insight warn">
-        <strong>S2B 垂頭陷阱：高位勝率 45.7%（n=35），無 false-breakout 風險</strong>
-        BB%B≥0.8 時 S2B 多單勝率 45.7%，與低位 42.4% 差距縮小（前次 n=7 誤導為 14.3%）。做空方向仍正確（勝率稍低），且 0 筆 false-breakout，不會被先反彈掃止損。需累積更多實盤確認。
+      <div class="card">
+        <div class="card-title">三策略進場快速清單（短期 3.5 月資料）</div>
+        <div class="grid-3">
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#1e40af;margin-bottom:8px">S1 AweWithBB（突破）</div>
+            <div class="cond-card long"><h4>高信心進場</h4><ul class="cond-list"><li>BB%B ≥ 0.8 + 4H bullish → <strong>71.4%</strong>（n=56）</li><li>DXY RSI &lt; 30（加分）</li></ul></div>
+            <div class="cond-card avoid"><h4>謹慎</h4><ul class="cond-list"><li>4H bearish → WR 44.9%</li><li>BB%B &lt; 0.6 → WR 顯著下降</li></ul></div>
+          </div>
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#065f46;margin-bottom:8px">S2A RSI（RSI 反轉）</div>
+            <div class="cond-card long"><h4>較佳進場</h4><ul class="cond-list"><li>4H neutral → WR 53.6%（n=28）</li><li>DXY 超賣加分</li></ul></div>
+            <div class="cond-card avoid"><h4>時間止損</h4><ul class="cond-list"><li>4H neutral → TB 率 61.5%⚠</li><li>持倉超 12h 手動平倉</li></ul></div>
+          </div>
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#5b21b6;margin-bottom:8px">S2B Hammer（槌頭反轉）</div>
+            <div class="cond-card long"><h4>多單進場</h4><ul class="cond-list"><li>BB%B &lt; 0.5（低位）正常邏輯</li><li>4H 狀態影響小（42–46%）</li></ul></div>
+            <div class="cond-card short"><h4>空單（垂頭陷阱）</h4><ul class="cond-list"><li>BB%B ≥ 0.8（高位錘頭）做空</li><li>0 false-breakout，入場安全</li><li>繼續累積樣本</li></ul></div>
+          </div>
+        </div>
       </div>
-      <div class="insight bad">
-        <strong>S2A 最危險條件：4H Neutral = 61.5% time_bleed 率（7 年確認）</strong>
-        S2A 在 4H neutral 時 61.5% 敗筆為 time_bleed，4H bearish 47.3%。整體 time_bleed 率從 52% 升至 64.7%（7 年資料更真實）。進場後超 12h 未達 TP 應手動考慮平倉。
-      </div>
-      <div class="insight info">
-        <strong>S2B time_bleed：與 4H 狀態無關（7 年確認 52–54%）</strong>
-        S2B time_bleed 整體升至 65.5%，且 bearish/bullish/neutral 三種狀態均約 52–54%。4H 過濾器無法解決 S2B 的時間磨耗問題。US 盤 time_bleed 比例最高（78%）。
-      </div>
+      <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整深度分析報告（長期版）→</a></div>
     </div>
 
-    <div class="card">
-      <div class="card-title">三策略主觀進場快速清單</div>
-      <div class="grid-3">
-        <div>
-          <div style="font-size:.82em;font-weight:700;color:#1e40af;margin-bottom:8px">S1 AweWithBB（突破）</div>
-          <div class="cond-card long">
-            <h4>高信心進場</h4>
-            <ul class="cond-list">
-              <li>BB%B ≥ 0.8（勝率 61–78%）</li>
-              <li>+ 4H RSI bullish（→ 90.9%）</li>
-              <li>+ DXY RSI &lt; 30（加分）</li>
-            </ul>
+    <!-- LONG -->
+    <div data-ds="long">
+      <div class="part-label"><span class="part-badge">KEY FINDINGS</span>深度分析精華 · 長期 7 年（2019~2026）</div>
+      <div class="insight-grid">
+        <div class="insight good"><strong>S1 最高信心：BB≥0.8 + 4H bullish = 72.9%（n=59，7 年確認）</strong>前次短期 71.4%（n=56），7 年資料 72.9%（n=59）一致，信心度高。這是 S1 所有條件組合中最高且樣本最可靠的組合。</div>
+        <div class="insight warn"><strong>S2B 垂頭陷阱：WR=45.7%（n=35），vs 基準 42.4%，0 false-breakout</strong>高位多單僅略優於基準。但 0 false_breakout（7 年確認）→ 做空入場不會先被往上的假突破掃止損，實戰安全性高。</div>
+        <div class="insight bad"><strong>S2A time_bleed：64.7%（180/278 虧損），7 年基準更嚴峻</strong>7 年資料確認 time_bleed 遠高於短期（51.6%）。4H neutral 時 61.5%（最危險）。超 12h 必須手動考慮平倉。</div>
+        <div class="insight warn"><strong>S2B time_bleed：65.5%（224/342 虧損），4H 過濾無效</strong>7 年資料確認：三種 4H 狀態均約 52–54%，差異極小。4H 過濾器對 S2B 無效。需研究時段（亞盤 vs 歐美盤）。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">三策略進場快速清單（長期 7 年資料）</div>
+        <div class="grid-3">
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#1e40af;margin-bottom:8px">S1 AweWithBB（突破）</div>
+            <div class="cond-card long"><h4>高信心進場</h4><ul class="cond-list"><li>BB%B ≥ 0.8 + 4H bullish → <strong>72.9%</strong>（n=59）</li><li>DXY RSI &lt; 30（加分）</li></ul></div>
+            <div class="cond-card avoid"><h4>謹慎</h4><ul class="cond-list"><li>4H bearish → WR 44.9%</li><li>BB%B &lt; 0.6 → WR 顯著下降</li></ul></div>
           </div>
-          <div class="cond-card avoid">
-            <h4>謹慎 / 跳過</h4>
-            <ul class="cond-list">
-              <li>4H bearish（勝率 47.9%）</li>
-              <li>BB%B &lt; 0.6（勝率顯著下降）</li>
-            </ul>
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#065f46;margin-bottom:8px">S2A RSI（RSI 反轉）</div>
+            <div class="cond-card long"><h4>較佳進場</h4><ul class="cond-list"><li>4H neutral → WR 53.6%（n=28）</li><li>4H bullish → WR 55.6%（n=9）</li></ul></div>
+            <div class="cond-card avoid"><h4>時間止損</h4><ul class="cond-list"><li>4H neutral → TB 率 61.5%⚠（最危）</li><li>持倉超 12h 強制手動平倉</li></ul></div>
           </div>
-        </div>
-        <div>
-          <div style="font-size:.82em;font-weight:700;color:#065f46;margin-bottom:8px">S2A RSI（RSI 反轉）</div>
-          <div class="cond-card long">
-            <h4>較佳進場</h4>
-            <ul class="cond-list">
-              <li>4H RSI bullish（勝率 75%，樣本小）</li>
-              <li>4H neutral（勝率 53.6%）</li>
-              <li>DXY 超賣（有加分）</li>
-            </ul>
-          </div>
-          <div class="cond-card avoid">
-            <h4>設時間停損</h4>
-            <ul class="cond-list">
-              <li>4H neutral → time_bleed 率 61.5%</li>
-              <li>4H bearish → time_bleed 率 46.6%</li>
-              <li>建議：持倉超 12h 考慮手動平倉</li>
-            </ul>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:.82em;font-weight:700;color:#5b21b6;margin-bottom:8px">S2B Hammer（槌頭反轉）</div>
-          <div class="cond-card long">
-            <h4>多單進場</h4>
-            <ul class="cond-list">
-              <li>BB%B &lt; 0.5（低位槌頭，正常邏輯）</li>
-              <li>4H 狀態對 S2B 多單影響小</li>
-            </ul>
-          </div>
-          <div class="cond-card short">
-            <h4>空單（垂頭陷阱）</h4>
-            <ul class="cond-list">
-              <li>BB%B ≥ 0.8（高位槌頭失敗率 85.7%）</li>
-              <li>無 false-breakout 風險，可直接空</li>
-              <li>樣本 n=7，持續累積觀察</li>
-            </ul>
+          <div>
+            <div style="font-size:.82em;font-weight:700;color:#5b21b6;margin-bottom:8px">S2B Hammer（槌頭反轉）</div>
+            <div class="cond-card long"><h4>多單進場</h4><ul class="cond-list"><li>BB%B &lt; 0.5（低位）正常邏輯</li><li>4H 狀態影響小（41–45%）</li></ul></div>
+            <div class="cond-card short"><h4>空單（垂頭陷阱）</h4><ul class="cond-list"><li>BB%B ≥ 0.8（高位錘頭）做空</li><li>0 false-breakout（7 年確認）</li><li>多單 WR 45.7% vs 基準 42.4%</li></ul></div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="report-links">
-      <a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整深度分析報告 →</a>
+      <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整深度分析報告 →</a></div>
     </div>
   </div><!-- /deep-overview -->
 
-  <!-- Step 1 -->
+  <!-- ── Step 1: S2B 垂頭陷阱 ──────────────────────────── -->
   <div id="deep-step1" class="tab-panel">
     <div class="part-label"><span class="part-badge">STEP 1</span>S2B 垂頭陷阱 失敗模式分解</div>
-    <div class="card">
-      <div class="card-title">S2B 高位（BB%B ≥ 0.8）進場失敗分析</div>
+
+    <!-- SHORT -->
+    <div data-ds="short" style="display:none">
       <div class="grid-2">
-        <div>
-          <div class="insight bad"><strong>高位進場（BB%B ≥ 0.8）勝率：14.3%</strong>7 筆交易，6 敗 1 勝。遠低於低位進場（37.8%），方向明確不利多單。</div>
-          <div class="insight good"><strong>0% false-breakout（0 / 6 敗筆）</strong>所有失敗均非先漲後跌模式，做空時不會先被往上的假突破掃止損。失敗類型：time_bleed 3 筆、normal_sl 3 筆。</div>
+        <div class="card">
+          <div class="card-title">BB%B 分組比較（短期 3.5 月，200 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>分組</th><th>筆數</th><th>勝率</th><th>敗筆</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BB%B ≥ 0.8（高位）</strong></td><td>34</td><td class="wr-ok">44.1%</td><td>19</td></tr>
+              <tr><td>BB%B &lt; 0.8（低位）</td><td>162</td><td class="wr-ok">43.8%</td><td>91</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight info" style="margin-top:8px">高位（44.1%）vs 低位（43.8%）差距極小。高位多單並未明顯更差，但做空方向仍有支持。</div>
         </div>
-        <div>
-          <div class="insight warn"><strong>樣本數僅 7 筆，統計信心度低</strong>需繼續在實盤累積數據。目前方向判斷（BB%B 高位空）是正確的，但確切的進場時機仍需主觀判斷。</div>
-          <div class="insight info"><strong>time_bleed 佔 50% 敗筆</strong>高位進場失敗後價格不立即下跌，可能橫盤 12 小時以上才跌。做空止損需稍寬，或等待明確陰線確認。</div>
+        <div class="card">
+          <div class="card-title">高位 BB 敗筆失敗類型（n=19）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>失敗類型</th><th>筆數</th><th>佔敗筆</th></tr></thead>
+            <tbody>
+              <tr><td>time_bleed</td><td>11</td><td>57.9%</td></tr>
+              <tr><td>normal_sl</td><td>6</td><td>31.6%</td></tr>
+              <tr><td>immediate_loss</td><td>2</td><td>10.5%</td></tr>
+              <tr><td><strong>false_breakout</strong></td><td><strong>0</strong></td><td class="wr-hi"><strong>0% ✅</strong></td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight good" style="margin-top:8px"><strong>0 false_breakout</strong>失敗不會先衝高再跌，做空止損不會被先洗掉。</div>
         </div>
       </div>
     </div>
-    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step1">完整 Step 1 分析 →</a></div>
+
+    <!-- LONG -->
+    <div data-ds="long">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">BB%B 分組比較（長期 7 年，560 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>分組</th><th>筆數</th><th>勝率</th><th>敗筆</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BB%B ≥ 0.8（高位）</strong></td><td>35</td><td class="wr-ok">45.7%</td><td>19</td></tr>
+              <tr><td>BB%B &lt; 0.8（低位）</td><td>165</td><td class="wr-ok">42.4%</td><td>95</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight info" style="margin-top:8px">高位（45.7%）略優於低位（42.4%），說明高位錘頭多單並非「一定輸」。但做空有更好的風險回報。</div>
+        </div>
+        <div class="card">
+          <div class="card-title">高位 BB 敗筆失敗類型（n=19，7 年確認）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>失敗類型</th><th>筆數</th><th>佔敗筆</th></tr></thead>
+            <tbody>
+              <tr><td>time_bleed</td><td>11</td><td>57.9%</td></tr>
+              <tr><td>normal_sl</td><td>6</td><td>31.6%</td></tr>
+              <tr><td>immediate_loss</td><td>2</td><td>10.5%</td></tr>
+              <tr><td><strong>false_breakout</strong></td><td><strong>0</strong></td><td class="wr-hi"><strong>0% ✅ 7 年確認</strong></td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight good" style="margin-top:8px"><strong>0 false_breakout（7 年 560 筆確認）</strong>高位錘頭失敗從不會先衝高再跌。做空者的止損不會被先洗出。</div>
+        </div>
+      </div>
+    </div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整 Step 1 分析 →</a></div>
   </div><!-- /deep-step1 -->
 
-  <!-- Step 2 -->
+  <!-- ── Step 2: 進場清單 ───────────────────────────────── -->
   <div id="deep-step2" class="tab-panel">
     <div class="part-label"><span class="part-badge">STEP 2</span>三策略進場清單（條件 × 勝率）</div>
 
-    <div class="card">
-      <div class="card-title">S1 AweWithBB — 4H 狀態 × BB 位置 勝率矩陣</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>4H RSI 狀態</th><th>BB &lt; 0.8</th><th>BB ≥ 0.8</th><th>說明</th></tr></thead>
-        <tbody>
-          <tr><td><strong>bullish</strong></td><td style="background:#d1fae5;font-weight:700">56.5%</td><td style="background:#6ee7b7;font-weight:700;color:#064e3b">72.9% ★</td><td style="font-size:.82em;color:var(--muted)">最高信心組合（n=144）</td></tr>
-          <tr><td><strong>neutral</strong></td><td style="background:#fef3c7;font-weight:700">47.8%</td><td style="background:#fef3c7;font-weight:700">48.6%</td><td style="font-size:.82em;color:var(--muted)">中等，可進</td></tr>
-          <tr><td><strong>bearish</strong></td><td style="background:#fee2e2;font-weight:700">44.9%</td><td style="background:#fef3c7;font-weight:700">58.3%</td><td style="font-size:.82em;color:var(--muted)">4H bearish 但高 BB 仍可進</td></tr>
-        </tbody>
-      </table></div>
-      <div class="insight good" style="margin-top:8px"><strong>結論：BB≥0.8 + 4H bullish = 72.9%（7 年 1,097 筆確認）</strong>前次 90.9% 為 n=11 偏差，現以完整資料修正。72.9% 仍是最高信心組合。</div>
+    <!-- SHORT -->
+    <div data-ds="short" style="display:none">
+      <div class="card">
+        <div class="card-title">S1 AweWithBB — 4H 狀態 × BB 位置（短期 504 筆）</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H RSI</th><th>BB &lt; 0.8</th><th>n</th><th>BB ≥ 0.8</th><th>n</th></tr></thead>
+          <tbody>
+            <tr><td><strong>bullish</strong></td><td class="wr-hi">58.8%</td><td>80</td><td class="wr-hi">71.4% ★</td><td>56</td></tr>
+            <tr><td><strong>neutral</strong></td><td class="wr-ok">47.8%</td><td>69</td><td class="wr-ok">48.6%</td><td>35</td></tr>
+            <tr><td><strong>bearish</strong></td><td class="wr-ok">44.9%</td><td>167</td><td class="wr-hi">58.3%</td><td>48</td></tr>
+          </tbody>
+        </table></div>
+        <div class="insight good" style="margin-top:8px">短期最高信心：4H bullish + BB≥0.8 = <strong>71.4%</strong>（n=56）</div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">S2A RSI — 4H 狀態（短期 161 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H 狀態</th><th>筆數</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bullish</td><td>4</td><td class="wr-hi">75.0%<sup>*</sup></td></tr>
+              <tr><td>neutral</td><td>28</td><td class="wr-ok">53.6%</td></tr>
+              <tr><td>bearish</td><td>119</td><td class="wr-lo">38.7%</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.78em;color:var(--muted);margin-top:4px">* n=4 樣本過小</div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2B Hammer — 4H 狀態（短期 200 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H 狀態</th><th>筆數</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bullish</td><td>61</td><td class="wr-ok">45.9%</td></tr>
+              <tr><td>neutral</td><td>42</td><td class="wr-ok">42.9%</td></tr>
+              <tr><td>bearish</td><td>78</td><td class="wr-ok">42.3%</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.78em;color:var(--muted);margin-top:4px">S2B 4H 狀態影響有限（42–46%）</div>
+        </div>
+      </div>
     </div>
 
-    <div class="grid-2">
+    <!-- LONG -->
+    <div data-ds="long">
       <div class="card">
-        <div class="card-title">S2A RSI — 4H 狀態勝率</div>
+        <div class="card-title">S1 AweWithBB — 4H 狀態 × BB 位置（7 年 1,097 筆）</div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>4H RSI 狀態</th><th>總筆數</th><th>勝率</th></tr></thead>
+          <thead><tr><th>4H RSI</th><th>BB &lt; 0.8</th><th>n</th><th>BB ≥ 0.8</th><th>n</th></tr></thead>
           <tbody>
-            <tr><td>bullish</td><td>4</td><td style="background:#d1fae5;font-weight:700">75.0%（樣本小）</td></tr>
-            <tr><td>neutral</td><td>28</td><td style="background:#fef3c7;font-weight:700">53.6%</td></tr>
-            <tr><td>bearish</td><td>119</td><td style="background:#fee2e2;font-weight:700">38.7%</td></tr>
+            <tr><td><strong>bullish</strong></td><td class="wr-hi">56.5%</td><td>85</td><td class="wr-hi">72.9% ★</td><td>59</td></tr>
+            <tr><td><strong>neutral</strong></td><td class="wr-ok">47.8%</td><td>69</td><td class="wr-ok">48.6%</td><td>35</td></tr>
+            <tr><td><strong>bearish</strong></td><td class="wr-ok">44.9%</td><td>167</td><td class="wr-hi">58.3%</td><td>48</td></tr>
           </tbody>
         </table></div>
+        <div class="insight good" style="margin-top:8px">7 年最高信心：4H bullish + BB≥0.8 = <strong>72.9%</strong>（n=59，樣本充足，高信心）</div>
       </div>
-      <div class="card">
-        <div class="card-title">S2B Hammer — 4H 狀態勝率</div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>4H RSI 狀態</th><th>總筆數</th><th>勝率</th></tr></thead>
-          <tbody>
-            <tr><td>bullish</td><td>61</td><td style="background:#fef3c7;font-weight:700">45.9%</td></tr>
-            <tr><td>neutral</td><td>42</td><td style="background:#fef3c7;font-weight:700">42.9%</td></tr>
-            <tr><td>bearish</td><td>78</td><td style="background:#fee2e2;font-weight:700">42.3%</td></tr>
-          </tbody>
-        </table></div>
-        <div style="font-size:.82em;color:var(--muted);margin-top:8px">S2B 的 4H 狀態對多單勝率影響較小（42–46% 範圍）</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">S2A RSI — 4H 狀態（7 年 450 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H 狀態</th><th>筆數</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bullish</td><td>9</td><td class="wr-ok">55.6%</td></tr>
+              <tr><td>neutral</td><td>28</td><td class="wr-ok">53.6%</td></tr>
+              <tr><td>bearish</td><td>119</td><td class="wr-lo">37.8%</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.78em;color:var(--muted);margin-top:4px">bullish n=4→9，WR 75%→55.6%（7年修正小樣本偏差）</div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2B Hammer — 4H 狀態（7 年 560 筆）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H 狀態</th><th>筆數</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bullish</td><td>65</td><td class="wr-ok">44.6%</td></tr>
+              <tr><td>neutral</td><td>42</td><td class="wr-ok">42.9%</td></tr>
+              <tr><td>bearish</td><td>78</td><td class="wr-lo">41.0%</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.78em;color:var(--muted);margin-top:4px">4H 過濾對 S2B 多單幫助有限（差距 &lt; 4%）</div>
+        </div>
       </div>
     </div>
-    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step2">完整 Step 2 分析 →</a></div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整 Step 2 分析 →</a></div>
   </div><!-- /deep-step2 -->
 
-  <!-- Step 3 -->
+  <!-- ── Step 3: Time-Bleed ─────────────────────────────── -->
   <div id="deep-step3" class="tab-panel">
     <div class="part-label"><span class="part-badge">STEP 3</span>三策略 Time-Bleed 特徵分析</div>
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-title">S1 AweWithBB — Time-bleed 率：25.4%</div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
-          <tbody>
-            <tr><td>bearish</td><td>112</td><td>17.0%</td><td style="background:#fef3c7;font-weight:700">47.9%</td></tr>
-            <tr><td>neutral</td><td>54</td><td>20.4%</td><td style="background:#fef3c7;font-weight:700">48.1%</td></tr>
-            <tr><td>bullish</td><td>49</td><td>24.5%</td><td style="background:#d1fae5;font-weight:700">64.0%</td></tr>
-          </tbody>
-        </table></div>
-        <div class="insight info" style="margin-top:8px"><strong>S1 time_bleed 比例低（21%），各 4H 狀態差異小</strong>S1 的失敗模式以 immediate_loss（31%）為主，時間磨耗不是主要問題。</div>
-      </div>
-      <div class="card">
-        <div class="card-title">S2A RSI — Time-bleed 率：64.7%</div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
-          <tbody>
-            <tr><td>neutral</td><td>28</td><td style="background:#fee2e2;font-weight:700">61.5% ⚠️</td><td style="background:#fef3c7;font-weight:700">53.6%</td></tr>
-            <tr><td>bearish</td><td>74</td><td style="background:#fee2e2;font-weight:700">47.3%</td><td style="background:#fee2e2;font-weight:700">38.7%</td></tr>
-            <tr><td>bullish</td><td>1</td><td>—</td><td style="background:#d1fae5;font-weight:700">75.0%</td></tr>
-          </tbody>
-        </table></div>
-        <div class="insight bad" style="margin-top:8px"><strong>4H neutral 時 S2A 最容易 time_bleed（61.5%）</strong>進場後若 12 小時未動，建議手動平倉，不要繼續等待。</div>
-      </div>
-      <div class="card">
-        <div class="card-title">S2B Hammer — Time-bleed 率：65.5%</div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
-          <tbody>
-            <tr><td>bullish</td><td>36</td><td>52.8%</td><td style="background:#fef3c7;font-weight:700">44.6%</td></tr>
-            <tr><td>neutral</td><td>24</td><td>54.2%</td><td style="background:#fef3c7;font-weight:700">42.9%</td></tr>
-            <tr><td>bearish</td><td>46</td><td>54.3%</td><td style="background:#fee2e2;font-weight:700">41.0%</td></tr>
-          </tbody>
-        </table></div>
-        <div class="insight warn" style="margin-top:8px"><strong>S2B time_bleed 與 4H 狀態無關（均約 53–55%）</strong>4H 過濾器對 S2B 無法降低時間磨耗。需另外研究：是否與進場時段（亞盤 vs 歐美盤）相關？</div>
+
+    <!-- SHORT -->
+    <div data-ds="short" style="display:none">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">S1 — TB 率：20.8%（49/236）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>112</td><td>17.0%</td><td class="wr-ok">47.9%</td></tr>
+              <tr><td>neutral</td><td>54</td><td>20.4%</td><td class="wr-ok">48.1%</td></tr>
+              <tr><td>bullish</td><td>49</td><td>24.5%</td><td class="wr-hi">64.0%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight info" style="margin-top:8px">S1 time_bleed 低（21%），4H 差異小。主要問題是 immediate_loss。</div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2A — TB 率：51.6%（48/93）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>73</td><td class="wr-lo">46.6%</td><td class="wr-lo">38.7%</td></tr>
+              <tr><td>neutral</td><td>13</td><td class="wr-lo">61.5% ⚠</td><td class="wr-ok">53.6%</td></tr>
+              <tr><td>bullish</td><td>1</td><td class="wr-na">—</td><td class="wr-hi">75.0%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight warn" style="margin-top:8px">短期 time_bleed 51.6%，4H neutral 最危（61.5%）。超 12h 考慮平。</div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2B — TB 率：53.6%（60/112）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>45</td><td>53.3%</td><td class="wr-ok">42.3%</td></tr>
+              <tr><td>bullish</td><td>33</td><td>54.5%</td><td class="wr-ok">45.9%</td></tr>
+              <tr><td>neutral</td><td>24</td><td>54.2%</td><td class="wr-ok">42.9%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight warn" style="margin-top:8px">4H 無差異（53–55%），過濾無效。</div>
+        </div>
       </div>
     </div>
-    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step3">完整 Step 3 分析 →</a></div>
+
+    <!-- LONG -->
+    <div data-ds="long">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">S1 — TB 率：25.4%（142/560）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>112</td><td>17.0%</td><td class="wr-ok">47.9%</td></tr>
+              <tr><td>neutral</td><td>54</td><td>20.4%</td><td class="wr-ok">48.1%</td></tr>
+              <tr><td>bullish</td><td>53</td><td>22.6%</td><td class="wr-hi">63.2%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight info" style="margin-top:8px">S1 time_bleed 低（25%），7 年確認。主要問題是 immediate_loss（30%）。</div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2A — TB 率：64.7%（180/278）⚠</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>74</td><td class="wr-lo">47.3%</td><td class="wr-lo">37.8%</td></tr>
+              <tr><td>neutral</td><td>13</td><td class="wr-lo">61.5% ⚠</td><td class="wr-ok">53.6%</td></tr>
+              <tr><td>bullish</td><td>4</td><td class="wr-lo">75.0%</td><td class="wr-ok">55.6%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight bad" style="margin-top:8px">7 年 time_bleed 64.7%，遠高於短期 51.6%。4H neutral 最危（61.5%）。<strong>超 12h 強制手動平倉。</strong></div>
+        </div>
+        <div class="card">
+          <div class="card-title">S2B — TB 率：65.5%（224/342）</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>4H</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+            <tbody>
+              <tr><td>bearish</td><td>46</td><td>54.3%</td><td class="wr-lo">41.0%</td></tr>
+              <tr><td>bullish</td><td>36</td><td>52.8%</td><td class="wr-ok">44.6%</td></tr>
+              <tr><td>neutral</td><td>24</td><td>54.2%</td><td class="wr-ok">42.9%</td></tr>
+            </tbody>
+          </table></div>
+          <div class="insight warn" style="margin-top:8px">7 年 time_bleed 65.5%，4H 三種狀態均約 52–54%。4H 過濾器無效，需研究時段。</div>
+        </div>
+      </div>
+    </div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整 Step 3 分析 →</a></div>
   </div><!-- /deep-step3 -->
 
 </div><!-- /main-deep -->
 
 <div class="footer">
-  XAUUSD Strategy Hub &nbsp;·&nbsp; 資料截至 2026-04-27 &nbsp;·&nbsp; Generated by Claude Code 2026-05-02
+  XAUUSD Strategy Hub &nbsp;·&nbsp; 資料截至 2026-05-06 &nbsp;·&nbsp; Generated by Claude Code 2026-05-06
   <br><br>
   <a href="https://github.com/tittanliao/xauusd" style="color:var(--muted)">GitHub Repository</a>
 </div>
@@ -1672,10 +1932,23 @@ function showMain(id, btn) {
 function showTab(prefix, id, btn) {
   const section = prefix + '-';
   document.querySelectorAll('[id^="' + section + '"]').forEach(p => p.classList.remove('active'));
-  // Reset sub-tabs in this subnav only
   btn.closest('.subnav').querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
   document.getElementById(section + id).classList.add('active');
   btn.classList.add('active');
+}
+
+function switchDS(mode, btn) {
+  const section = btn.closest('.main-section');
+  section.querySelectorAll('.ds-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  section.querySelectorAll('.ds-period').forEach(el => {
+    el.style.display = (el.dataset.ds === mode) ? '' : 'none';
+  });
+  section.querySelectorAll('[data-ds]').forEach(el => {
+    if (!el.classList.contains('ds-period')) {
+      el.style.display = (el.dataset.ds === mode) ? '' : 'none';
+    }
+  });
 }
 </script>
 
