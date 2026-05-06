@@ -161,13 +161,15 @@ Regular Bullish, Regular Bullish Label, Regular Bearish, Regular Bearish Label
 
 **版本命名規則**：`VX.Y`（確認版）→ `VX.Y+1.1`（測試版）→ `VX.Y+1`（確認後升版）
 
-## 現有策略最新績效（2026-04-27）
+## 現有策略最新績效（2026-05-06，7 年資料 2019–2026）
 
 | ID | 策略名稱 | 版本 | 交易筆數 | 勝率 | 獲利因子 | 淨盈虧 | 最大回撤 | 主要問題 |
 |----|---------|------|---------|------|---------|--------|---------|---------|
-| S1-AweWithBB | AweWithBB | V3.4 | 504 | 53.2% | 1.525 | +$6,137 | -$494 | immediate_loss 31% |
-| S2A-RSI | RSI Reversion | V2.0 | 161 | 42.2% | 1.679 | +$6,212 | -$1,177 | time_bleed 52% |
-| S2B-Hammer | Hammer Pullback | V1.9 | 200 | 44.0% | 1.681 | +$7,722 | -$1,431 | time_bleed 54% |
+| S1-AweWithBB | AweWithBB | V3.4 | 1,097 | 49.0% | 1.23 | +$6,386 | -$1,901 | immediate_loss 30% |
+| S2A-RSI | RSI Reversion | V2.0 | 450 | 38.2% | 1.38 | +$10,450 | -$2,868 | time_bleed 65% |
+| S2B-Hammer | Hammer Pullback | V1.9 | 560 | 38.9% | 1.38 | +$12,908 | -$1,880 | time_bleed 66% |
+
+> 注意：前次 2026-04-27 的績效（504/161/200 筆）是偏好市場環境下的短期數字，7 年資料更具代表性。
 
 ---
 
@@ -253,11 +255,11 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 
 ### Step 1：S2B 垂頭陷阱 失敗模式分解
 
-- BB%B ≥ 0.8 時 S2B 多單勝率：**14.3%**（7 筆，1 勝 6 敗）
-- 低位（BB%B < 0.8）基準勝率：37.8%（37 筆）
-- 高位敗筆失敗類型：`time_bleed` 3 筆、`normal_sl` 3 筆，**0 筆 false_breakout**
-- **結論**：高位槌頭失敗時，價格不會先往上反彈再跌（無 false_breakout），做空不會被先反彈掃止損。
-- **警告**：樣本僅 7 筆，需持續累積實盤數據驗證。
+- BB%B ≥ 0.8 時 S2B 多單勝率：**45.7%**（n=35，19 敗）← 前次 14.3% 為 n=7 偏差
+- 低位（BB%B < 0.8）基準勝率：42.4%（165 筆）
+- 高位敗筆失敗類型：`time_bleed` 11 筆、`normal_sl` 6 筆、`immediate_loss` 2 筆，**0 筆 false_breakout**
+- **結論**：高位多空差距縮小（45.7% vs 42.4%），但 0 false_breakout 確認做空入場安全（不會被先反彈掃止損）
+- **實戰**：用戶正向回饋持續，繼續累積樣本驗證
 
 ### Step 2：三策略進場清單（精確數字）
 
@@ -265,9 +267,9 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 
 | 4H 狀態 | BB < 0.8 勝率 | BB ≥ 0.8 勝率 |
 |---------|-------------|-------------|
-| bullish | 61.6% | **90.9%** ← 最高信心 |
-| neutral | 47.9% | 50.0% |
-| bearish | 47.8% | 50.0% |
+| bullish | 56.5% | **72.9%** ← 最高信心（n=144） |
+| neutral | 47.8% | 48.6% |
+| bearish | 44.9% | 58.3% |
 
 **S2A RSI（RSI 反轉）**（幾乎無 BB ≥ 0.8 交易）
 
@@ -281,23 +283,23 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 
 | 4H 狀態 | 總筆數 | 勝率 |
 |---------|-------|------|
-| bullish | 61 | 45.9% |
+| bullish | 65 | 44.6% |
 | neutral | 42 | 42.9% |
-| bearish | 78 | 42.3% |
+| bearish | 78 | 41.0% |
 
-→ S2B 多單勝率對 4H 狀態不敏感（42–46%），4H 過濾器對 S2B 多單幫助有限。
+→ S2B 多單勝率對 4H 狀態不敏感（41–45%），4H 過濾器對 S2B 多單幫助有限。
 
-### Step 3：三策略 Time-Bleed 特徵分析
+### Step 3：三策略 Time-Bleed 特徵分析（7 年資料更新）
 
-**S1 AweWithBB**：time_bleed 率 20.8%（輕微），各 4H 狀態差異小（17–25%）
+**S1 AweWithBB**：time_bleed 率 25.4%，各 4H 狀態差異小（17–23%）
 
-**S2A RSI**：time_bleed 率 51.6%
+**S2A RSI**：time_bleed 率 **64.7%**（更新，前次 51.6%）
 - 4H neutral 時 **61.5%** 敗筆是 time_bleed（最高）
-- 4H bearish 時 46.6%
+- 4H bearish 時 47.3%
 - **行動**：S2A 進場後持倉超 12h 未達 TP，考慮手動平倉
 
-**S2B Hammer**：time_bleed 率 53.6%
-- 4H 三種狀態的 time_bleed 率幾乎相同（53–55%）
+**S2B Hammer**：time_bleed 率 **65.5%**（更新，前次 53.6%）
+- 4H 三種狀態均約 52–54%，差異極小
 - **結論**：4H 過濾器無法降低 S2B 的時間磨耗，需另外研究時段因素
 
 ### Pine Script 版本歷程

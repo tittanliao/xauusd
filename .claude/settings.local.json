@@ -18,7 +18,11 @@
       "Bash(python3.12 -c \"import pandas, numpy, matplotlib; print\\('OK'\\)\")",
       "Bash(python3.12 *)",
       "Bash(git commit *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(py -3.11 run_deep_analysis.py)",
+      "Bash(py -3.11 -c ' *)",
+      "Bash(py -3.11 main.py)",
+      "Bash(python -u -c ' *)"
     ]
   }
 }

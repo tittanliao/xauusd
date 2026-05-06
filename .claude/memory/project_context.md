@@ -20,9 +20,9 @@ originSessionId: 50c1ae8c-8816-4a68-a11d-86ce07776023
 ## 現有策略績效（截至 2026-04-27）
 | 策略 | 勝率 | 獲利因子 | 淨盈虧 | 主要問題 |
 |------|------|---------|--------|---------|
-| S1-AweWithBB V3.6.2（測試中） | 53.2% | 1.525 | +$6,137 | immediate_loss 31% |
-| S2A-RSI V2.3（原 S2-Hybrid，測試中） | 42.2% | 1.679 | +$6,212 | time_bleed 52% |
-| S2B-Hammer V2.2（原 S2-Pullback，測試中） | 44.0% | 1.681 | +$7,722 | time_bleed 54% |
+| S1-AweWithBB V3.6.2 | 49.0% | 1.23 | +$6,386 | immediate_loss 30%（7年1097筆） |
+| S2A-RSI V2.3 | 38.2% | 1.38 | +$10,450 | time_bleed 65%（7年450筆） |
+| S2B-Hammer V2.2 | 38.9% | 1.38 | +$12,908 | time_bleed 66%（7年560筆） |
 
 ## 實驗策略排名（3 個月 30m，2026-01-21 至 2026-04-27）
 多單 Top3：E03 MACD Signal（PF 1.643）、E12 BB Squeeze Break（PF 1.337）、E16 ATR Vol Break（PF 1.124）
