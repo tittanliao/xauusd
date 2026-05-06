@@ -248,8 +248,9 @@ tbody tr:hover td{background:#f8fafc}
     <button class="nav-main-tab active" onclick="showMain('optimization',this)">現有策略優化</button>
     <button class="nav-main-tab" onclick="showMain('experiments',this)">實驗策略測試</button>
     <button class="nav-main-tab" onclick="showMain('trading',this)">當沖讀圖指南</button>
+    <button class="nav-main-tab" onclick="showMain('deep',this)">深度分析</button>
   </div>
-  <div class="nav-meta">Updated 2026-05-04</div>
+  <div class="nav-meta">Updated 2026-05-06</div>
 </nav>
 
 <!-- ══ SECTION A: 現有策略優化 ══════════════════════════════════ -->
@@ -1416,6 +1417,214 @@ tbody tr:hover td{background:#f8fafc}
   </div><!-- /trd-decision -->
 
 </div><!-- /main-trading -->
+
+<!-- ══ SECTION D: 深度分析 ════════════════════════════════════ -->
+<div id="main-deep" class="main-section">
+  <div class="subnav">
+    <button class="sub-tab active" onclick="showTab('deep','overview',this)">分析摘要</button>
+    <button class="sub-tab" onclick="showTab('deep','step1',this)">S2B 垂頭陷阱</button>
+    <button class="sub-tab" onclick="showTab('deep','step2',this)">進場清單</button>
+    <button class="sub-tab" onclick="showTab('deep','step3',this)">Time-Bleed</button>
+  </div>
+
+  <!-- Deep Overview -->
+  <div id="deep-overview" class="tab-panel active">
+    <div class="part-label"><span class="part-badge">KEY FINDINGS</span>深度分析精華 · 2026-05-06</div>
+
+    <div class="insight-grid">
+      <div class="insight good">
+        <strong>S1 最高信心組合：BB≥0.8 + 4H Bullish = 90.9% 勝率</strong>
+        S1 訊號出現時，若同時滿足 BB%B≥0.8 且 4H RSI 處於 bullish 狀態，歷史勝率高達 90.9%（樣本 n 待確認）。這是目前所有條件組合中最高的。
+      </div>
+      <div class="insight warn">
+        <strong>S2B 垂頭陷阱：高位做空無 false-breakout 風險</strong>
+        BB%B≥0.8 時 S2B 多單勝率僅 14.3%（6 敗 / 7 筆），且所有敗筆均無 false-breakout（即無先漲再跌），做空不會先被反彈掃止損。但樣本數小（7 筆），需持續觀察。
+      </div>
+      <div class="insight bad">
+        <strong>S2A 最危險條件：4H Neutral = 61.5% time_bleed 率</strong>
+        S2A 在 4H RSI 呈中性（neutral）時，敗筆中有 61.5% 為 time_bleed（持倉超 24 bar 被磨掉）。4H bearish 也有 46.6%。建議 4H neutral/bearish 進場 S2A 時設心理時間停損（12 小時）。
+      </div>
+      <div class="insight info">
+        <strong>S2B time_bleed：與 4H 狀態幾乎無關（53–55%）</strong>
+        S2B 的 time_bleed 比例在三種 4H 狀態下差異極小（bearish 53.3%、bullish 54.5%、neutral 54.2%），代表 4H 過濾器無法降低 S2B 的時間磨耗風險，需另尋解法。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">三策略主觀進場快速清單</div>
+      <div class="grid-3">
+        <div>
+          <div style="font-size:.82em;font-weight:700;color:#1e40af;margin-bottom:8px">S1 AweWithBB（突破）</div>
+          <div class="cond-card long">
+            <h4>高信心進場</h4>
+            <ul class="cond-list">
+              <li>BB%B ≥ 0.8（勝率 61–78%）</li>
+              <li>+ 4H RSI bullish（→ 90.9%）</li>
+              <li>+ DXY RSI &lt; 30（加分）</li>
+            </ul>
+          </div>
+          <div class="cond-card avoid">
+            <h4>謹慎 / 跳過</h4>
+            <ul class="cond-list">
+              <li>4H bearish（勝率 47.9%）</li>
+              <li>BB%B &lt; 0.6（勝率顯著下降）</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.82em;font-weight:700;color:#065f46;margin-bottom:8px">S2A RSI（RSI 反轉）</div>
+          <div class="cond-card long">
+            <h4>較佳進場</h4>
+            <ul class="cond-list">
+              <li>4H RSI bullish（勝率 75%，樣本小）</li>
+              <li>4H neutral（勝率 53.6%）</li>
+              <li>DXY 超賣（有加分）</li>
+            </ul>
+          </div>
+          <div class="cond-card avoid">
+            <h4>設時間停損</h4>
+            <ul class="cond-list">
+              <li>4H neutral → time_bleed 率 61.5%</li>
+              <li>4H bearish → time_bleed 率 46.6%</li>
+              <li>建議：持倉超 12h 考慮手動平倉</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.82em;font-weight:700;color:#5b21b6;margin-bottom:8px">S2B Hammer（槌頭反轉）</div>
+          <div class="cond-card long">
+            <h4>多單進場</h4>
+            <ul class="cond-list">
+              <li>BB%B &lt; 0.5（低位槌頭，正常邏輯）</li>
+              <li>4H 狀態對 S2B 多單影響小</li>
+            </ul>
+          </div>
+          <div class="cond-card short">
+            <h4>空單（垂頭陷阱）</h4>
+            <ul class="cond-list">
+              <li>BB%B ≥ 0.8（高位槌頭失敗率 85.7%）</li>
+              <li>無 false-breakout 風險，可直接空</li>
+              <li>樣本 n=7，持續累積觀察</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-links">
+      <a class="report-link" href="XAUUSD-Deep-Analysis/report.html">完整深度分析報告 →</a>
+    </div>
+  </div><!-- /deep-overview -->
+
+  <!-- Step 1 -->
+  <div id="deep-step1" class="tab-panel">
+    <div class="part-label"><span class="part-badge">STEP 1</span>S2B 垂頭陷阱 失敗模式分解</div>
+    <div class="card">
+      <div class="card-title">S2B 高位（BB%B ≥ 0.8）進場失敗分析</div>
+      <div class="grid-2">
+        <div>
+          <div class="insight bad"><strong>高位進場（BB%B ≥ 0.8）勝率：14.3%</strong>7 筆交易，6 敗 1 勝。遠低於低位進場（37.8%），方向明確不利多單。</div>
+          <div class="insight good"><strong>0% false-breakout（0 / 6 敗筆）</strong>所有失敗均非先漲後跌模式，做空時不會先被往上的假突破掃止損。失敗類型：time_bleed 3 筆、normal_sl 3 筆。</div>
+        </div>
+        <div>
+          <div class="insight warn"><strong>樣本數僅 7 筆，統計信心度低</strong>需繼續在實盤累積數據。目前方向判斷（BB%B 高位空）是正確的，但確切的進場時機仍需主觀判斷。</div>
+          <div class="insight info"><strong>time_bleed 佔 50% 敗筆</strong>高位進場失敗後價格不立即下跌，可能橫盤 12 小時以上才跌。做空止損需稍寬，或等待明確陰線確認。</div>
+        </div>
+      </div>
+    </div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step1">完整 Step 1 分析 →</a></div>
+  </div><!-- /deep-step1 -->
+
+  <!-- Step 2 -->
+  <div id="deep-step2" class="tab-panel">
+    <div class="part-label"><span class="part-badge">STEP 2</span>三策略進場清單（條件 × 勝率）</div>
+
+    <div class="card">
+      <div class="card-title">S1 AweWithBB — 4H 狀態 × BB 位置 勝率矩陣</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>4H RSI 狀態</th><th>BB &lt; 0.8</th><th>BB ≥ 0.8</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>bullish</strong></td><td style="background:#d1fae5;font-weight:700">61.6%</td><td style="background:#6ee7b7;font-weight:700;color:#064e3b">90.9% ★</td><td style="font-size:.82em;color:var(--muted)">最高信心組合</td></tr>
+          <tr><td><strong>neutral</strong></td><td style="background:#fef3c7;font-weight:700">47.9%</td><td style="background:#fef3c7;font-weight:700">50.0%</td><td style="font-size:.82em;color:var(--muted)">中等，可進</td></tr>
+          <tr><td><strong>bearish</strong></td><td style="background:#fee2e2;font-weight:700">47.8%</td><td style="background:#fef3c7;font-weight:700">50.0%</td><td style="font-size:.82em;color:var(--muted)">4H bearish 整體勝率低</td></tr>
+        </tbody>
+      </table></div>
+      <div class="insight good" style="margin-top:8px"><strong>結論：BB≥0.8 + 4H bullish 是 S1 的黃金組合（90.9%）</strong>每次 S1 訊號出現，先看 4H 和 BB 位置。兩個都對才是最高信心進場點。</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">S2A RSI — 4H 狀態勝率</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H RSI 狀態</th><th>總筆數</th><th>勝率</th></tr></thead>
+          <tbody>
+            <tr><td>bullish</td><td>4</td><td style="background:#d1fae5;font-weight:700">75.0%（樣本小）</td></tr>
+            <tr><td>neutral</td><td>28</td><td style="background:#fef3c7;font-weight:700">53.6%</td></tr>
+            <tr><td>bearish</td><td>119</td><td style="background:#fee2e2;font-weight:700">38.7%</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-title">S2B Hammer — 4H 狀態勝率</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H RSI 狀態</th><th>總筆數</th><th>勝率</th></tr></thead>
+          <tbody>
+            <tr><td>bullish</td><td>61</td><td style="background:#fef3c7;font-weight:700">45.9%</td></tr>
+            <tr><td>neutral</td><td>42</td><td style="background:#fef3c7;font-weight:700">42.9%</td></tr>
+            <tr><td>bearish</td><td>78</td><td style="background:#fee2e2;font-weight:700">42.3%</td></tr>
+          </tbody>
+        </table></div>
+        <div style="font-size:.82em;color:var(--muted);margin-top:8px">S2B 的 4H 狀態對多單勝率影響較小（42–46% 範圍）</div>
+      </div>
+    </div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step2">完整 Step 2 分析 →</a></div>
+  </div><!-- /deep-step2 -->
+
+  <!-- Step 3 -->
+  <div id="deep-step3" class="tab-panel">
+    <div class="part-label"><span class="part-badge">STEP 3</span>三策略 Time-Bleed 特徵分析</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">S1 AweWithBB — Time-bleed 率：20.8%</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+          <tbody>
+            <tr><td>bearish</td><td>112</td><td>17.0%</td><td style="background:#fef3c7;font-weight:700">47.9%</td></tr>
+            <tr><td>neutral</td><td>54</td><td>20.4%</td><td style="background:#fef3c7;font-weight:700">48.1%</td></tr>
+            <tr><td>bullish</td><td>49</td><td>24.5%</td><td style="background:#d1fae5;font-weight:700">64.0%</td></tr>
+          </tbody>
+        </table></div>
+        <div class="insight info" style="margin-top:8px"><strong>S1 time_bleed 比例低（21%），各 4H 狀態差異小</strong>S1 的失敗模式以 immediate_loss（31%）為主，時間磨耗不是主要問題。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">S2A RSI — Time-bleed 率：51.6%</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+          <tbody>
+            <tr><td>neutral</td><td>13</td><td style="background:#fee2e2;font-weight:700">61.5% ⚠️</td><td style="background:#fef3c7;font-weight:700">53.6%</td></tr>
+            <tr><td>bearish</td><td>73</td><td style="background:#fee2e2;font-weight:700">46.6%</td><td style="background:#fee2e2;font-weight:700">38.7%</td></tr>
+            <tr><td>bullish</td><td>1</td><td>—</td><td style="background:#d1fae5;font-weight:700">75.0%</td></tr>
+          </tbody>
+        </table></div>
+        <div class="insight bad" style="margin-top:8px"><strong>4H neutral 時 S2A 最容易 time_bleed（61.5%）</strong>進場後若 12 小時未動，建議手動平倉，不要繼續等待。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">S2B Hammer — Time-bleed 率：53.6%</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>4H 狀態</th><th>敗筆</th><th>TB 率</th><th>勝率</th></tr></thead>
+          <tbody>
+            <tr><td>bullish</td><td>33</td><td>54.5%</td><td style="background:#fef3c7;font-weight:700">45.9%</td></tr>
+            <tr><td>neutral</td><td>24</td><td>54.2%</td><td style="background:#fef3c7;font-weight:700">42.9%</td></tr>
+            <tr><td>bearish</td><td>45</td><td>53.3%</td><td style="background:#fee2e2;font-weight:700">42.3%</td></tr>
+          </tbody>
+        </table></div>
+        <div class="insight warn" style="margin-top:8px"><strong>S2B time_bleed 與 4H 狀態無關（均約 53–55%）</strong>4H 過濾器對 S2B 無法降低時間磨耗。需另外研究：是否與進場時段（亞盤 vs 歐美盤）相關？</div>
+      </div>
+    </div>
+    <div class="report-links"><a class="report-link" href="XAUUSD-Deep-Analysis/report.html#step3">完整 Step 3 分析 →</a></div>
+  </div><!-- /deep-step3 -->
+
+</div><!-- /main-deep -->
 
 <div class="footer">
   XAUUSD Strategy Hub &nbsp;·&nbsp; 資料截至 2026-04-27 &nbsp;·&nbsp; Generated by Claude Code 2026-05-02

@@ -245,6 +245,61 @@ BB %B = (close - lower) / (upper - lower)；7 個分區（below_lower → above_
 **S2 結論**：S2 幾乎只在中低 BB 位置進場，BB 位置過濾對 S2 幫助有限。  
 **行動**：已建立 V3.6.1 test 版本，加入 BB %B 過濾器（default off，門檻 0.6）+ 4H HTF 過濾器。
 
+---
+
+## 深度分析關鍵發現（2026-05-06）
+
+來源：`run_deep_analysis.py` → `XAUUSD-Deep-Analysis/report.html`
+
+### Step 1：S2B 垂頭陷阱 失敗模式分解
+
+- BB%B ≥ 0.8 時 S2B 多單勝率：**14.3%**（7 筆，1 勝 6 敗）
+- 低位（BB%B < 0.8）基準勝率：37.8%（37 筆）
+- 高位敗筆失敗類型：`time_bleed` 3 筆、`normal_sl` 3 筆，**0 筆 false_breakout**
+- **結論**：高位槌頭失敗時，價格不會先往上反彈再跌（無 false_breakout），做空不會被先反彈掃止損。
+- **警告**：樣本僅 7 筆，需持續累積實盤數據驗證。
+
+### Step 2：三策略進場清單（精確數字）
+
+**S1 AweWithBB（突破）**
+
+| 4H 狀態 | BB < 0.8 勝率 | BB ≥ 0.8 勝率 |
+|---------|-------------|-------------|
+| bullish | 61.6% | **90.9%** ← 最高信心 |
+| neutral | 47.9% | 50.0% |
+| bearish | 47.8% | 50.0% |
+
+**S2A RSI（RSI 反轉）**（幾乎無 BB ≥ 0.8 交易）
+
+| 4H 狀態 | 總筆數 | 勝率 |
+|---------|-------|------|
+| bullish | 4 | 75.0%（樣本小） |
+| neutral | 28 | 53.6% |
+| bearish | 119 | 38.7% |
+
+**S2B Hammer（槌頭反轉，多單）**
+
+| 4H 狀態 | 總筆數 | 勝率 |
+|---------|-------|------|
+| bullish | 61 | 45.9% |
+| neutral | 42 | 42.9% |
+| bearish | 78 | 42.3% |
+
+→ S2B 多單勝率對 4H 狀態不敏感（42–46%），4H 過濾器對 S2B 多單幫助有限。
+
+### Step 3：三策略 Time-Bleed 特徵分析
+
+**S1 AweWithBB**：time_bleed 率 20.8%（輕微），各 4H 狀態差異小（17–25%）
+
+**S2A RSI**：time_bleed 率 51.6%
+- 4H neutral 時 **61.5%** 敗筆是 time_bleed（最高）
+- 4H bearish 時 46.6%
+- **行動**：S2A 進場後持倉超 12h 未達 TP，考慮手動平倉
+
+**S2B Hammer**：time_bleed 率 53.6%
+- 4H 三種狀態的 time_bleed 率幾乎相同（53–55%）
+- **結論**：4H 過濾器無法降低 S2B 的時間磨耗，需另外研究時段因素
+
 ### Pine Script 版本歷程
 
 **S1-AweWithBB（右側突破）**
