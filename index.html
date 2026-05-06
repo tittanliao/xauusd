@@ -546,6 +546,32 @@ tbody tr:hover td{background:#f8fafc}
               <td class="td-files">S1-AweWithBB-V3.6.2.pine<br>S2A-RSI-V2.2.pine<br>S2B-Hammer-V2.1.pine<br>config.py<br>CLAUDE.md</td>
               <td class="td-memo"><strong>重繪修正可能改變 V3.6.x 回測數字</strong>lookahead_on 導致 1H MA 使用未來資料；修正後為真實歷史基準。需重新驗證勝率</td>
             </tr>
+            <tr>
+              <td class="td-date">2026-05-06</td>
+              <td class="td-topic"><span class="tag tag-analysis">分析</span>資料升級：7 年歷史（2019–2026）</td>
+              <td class="td-purpose">TradingView Premium 解鎖更長歷史，舊版 3.5 個月資料樣本不足（S2B n=7 偏差），需以全週期驗證結論</td>
+              <td class="td-action">
+                重新匯出三策略回測 CSV（各含 7 年資料）；
+                config.py 更新檔名；
+                加入雙資料集架構（get_strategies(mode)）；
+                main.py / run_deep_analysis.py 新增 --mode short|long 參數
+              </td>
+              <td class="td-files">config.py<br>main.py<br>run_deep_analysis.py<br>三策略 *_2026-05-06.csv</td>
+              <td class="td-memo"><strong>S1 1,097 筆 / S2A 450 筆 / S2B 560 筆</strong>短期高勝率（S1 53.2%）確認為偏好市場；長期基準：S1 49.0%、S2A 38.2%、S2B 38.9%</td>
+            </tr>
+            <tr>
+              <td class="td-date">2026-05-06</td>
+              <td class="td-topic"><span class="tag tag-analysis">分析</span>深度分析三步驟（7 年資料）</td>
+              <td class="td-purpose">用戶正在實戰 S2B 垂頭陷阱空單 + S1 高 BB 多單，需要更嚴謹的數據支撐；同時建立完整進場清單</td>
+              <td class="td-action">
+                新增 deep_analysis.py（s2b_trap_analysis / entry_checklist / time_bleed_features）；
+                新增 deep_report.py（HTML 報告生成）；
+                新增 run_deep_analysis.py（執行入口）；
+                修正關鍵數字：S1 BB&gt;=0.8 × 4H bullish 90.9%（n=11）→ 72.9%（n=144）
+              </td>
+              <td class="td-files">deep_analysis.py<br>deep_report.py<br>run_deep_analysis.py<br>XAUUSD-Deep-Analysis/report.html</td>
+              <td class="td-memo"><strong>S2B 0 false_breakout 結論不變</strong>高位多單 WR 45.7%（n=35）vs 基準 42.4%，差距縮小；但空單入場不會被先反彈掃止損仍成立。S2A/S2B time_bleed 更新：64.7% / 65.5%</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -557,10 +583,10 @@ tbody tr:hover td{background:#f8fafc}
     <div class="part-label"><span class="part-badge">PART 1</span>S1-AweWithBB 精華重點</div>
 
     <div class="grid-4">
-      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val green">53.2%</div><div class="metric-sub">504 筆交易</div></div>
-      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val">1.525</div><div class="metric-sub">淨盈虧 +$6,137</div></div>
-      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$494</div><div class="metric-sub">低回撤策略</div></div>
-      <div class="metric-card card"><div class="metric-label">immediate_loss</div><div class="metric-val red">31%</div><div class="metric-sub">進場即虧的虧損</div></div>
+      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val yellow">49.0%</div><div class="metric-sub">1,097 筆（7 年）</div></div>
+      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val">1.23</div><div class="metric-sub">淨盈虧 +$6,386</div></div>
+      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$1,901</div><div class="metric-sub">7 年週期</div></div>
+      <div class="metric-card card"><div class="metric-label">immediate_loss</div><div class="metric-val red">30%</div><div class="metric-sub">進場即虧的虧損</div></div>
     </div>
 
     <div class="insight-grid">
@@ -578,7 +604,7 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S1-AweWithBB 資料驅動進場指引（504 筆回測）</div>
+      <div class="card-title">📋 S1-AweWithBB 資料驅動進場指引（1,097 筆回測，7 年）</div>
       <div class="grid-2" style="gap:12px">
         <div class="cond-card long">
           <h4>✅ 優先進場條件（滿足越多越好）</h4>
@@ -622,6 +648,7 @@ tbody tr:hover td{background:#f8fafc}
             <tr><td class="td-date">2026-05-01</td><td>BB %B 分析：7 zone 勝率</td><td>above_upper 77.8%；中軌以下 &lt;20%</td><td>—</td></tr>
             <tr><td class="td-date">2026-05-01</td><td>V3.6.1：BB %B filter + 4H HTF filter（雙 toggle）</td><td>作為中間步驟</td><td class="ver-test">V3.6.1</td></tr>
             <tr><td class="td-date">2026-05-02</td><td>V3.6.2：修復 lookahead_on 重繪 bug + 統一 label（S1BB_LE）+ EMA 群組</td><td>重繪修正後回測結果可能改變，需全歷史驗證</td><td class="ver-test">V3.6.2 🧪</td></tr>
+            <tr><td class="td-date">2026-05-06</td><td>資料升級至 7 年（1,097 筆）；深度分析 Step 2 重新計算 4H × BB 矩陣</td><td>WR 49.0%（前次 53.2% 為短期偏高）；BB&gt;=0.8 × 4H bullish = 72.9%（n=144，前次 90.9% 為 n=11 偏差）</td><td>—</td></tr>
           </tbody>
         </table>
       </div>
@@ -633,17 +660,17 @@ tbody tr:hover td{background:#f8fafc}
     <div class="part-label"><span class="part-badge">PART 1</span>S2A-RSI 精華重點</div>
 
     <div class="grid-4">
-      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val yellow">42.2%</div><div class="metric-sub">161 筆交易</div></div>
-      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val green">1.679</div><div class="metric-sub">淨盈虧 +$6,212</div></div>
-      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$1,177</div><div class="metric-sub">中等回撤</div></div>
-      <div class="metric-card card"><div class="metric-label">time_bleed</div><div class="metric-val red">52%</div><div class="metric-sub">持倉超時的虧損</div></div>
+      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val red">38.2%</div><div class="metric-sub">450 筆（7 年）</div></div>
+      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val">1.38</div><div class="metric-sub">淨盈虧 +$10,450</div></div>
+      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$2,868</div><div class="metric-sub">7 年週期</div></div>
+      <div class="metric-card card"><div class="metric-label">time_bleed</div><div class="metric-val red">65%</div><div class="metric-sub">持倉超時的虧損</div></div>
     </div>
 
     <div class="insight-grid">
-      <div class="insight bad"><strong>❌ time_bleed 超過一半虧損</strong>平均持倉 140 bars（70 小時）— 遠超合理範圍<br>4H bearish 時 time_bleed 比例升到 46.6%<br><strong>→ 最優先：加入 48 bar 時間強制止損</strong></div>
+      <div class="insight bad"><strong>❌ time_bleed 65%（7 年）</strong>7 年資料確認：64.7% 虧損為超時持倉（前次短期 52%）<br>4H neutral 時最嚴重（61.5%）；4H bearish 時 47.3%<br><strong>→ 最優先：持倉超 12h 未達 TP 考慮手動平倉</strong></div>
       <div class="insight warn"><strong>⚠ BB 位置分析</strong>S2A-RSI 大多數進場在 near_lower（13 筆, 38.5%）和 lower_mid（20 筆, 25.0%）<br>這兩個 zone 恰恰是勝率最低的 — 策略進場邏輯與 BB 呈逆勢</div>
       <div class="insight info"><strong>📊 DXY 影響最顯著</strong>DXY RSI 30–50：38.4% WR（最差）<br>DXY RSI &lt; 30：75.0% WR（最佳，n=4）<br>→ DXY 30–50 時考慮暫停進場</div>
-      <div class="insight good"><strong>✅ 高盈虧比補償低勝率</strong>PF 1.679 — 雖然勝率低，但盈虧比高<br>說明贏的交易夠大、輸的控制尚可<br>→ 重點是減少 time_bleed 而非提高勝率</div>
+      <div class="insight good"><strong>✅ 高盈虧比補償低勝率</strong>PF 1.38（7 年），淨盈虧 +$10,450（450 筆）<br>說明贏的交易夠大、輸的控制尚可<br>→ 重點是減少 time_bleed 而非提高勝率</div>
     </div>
 
     <div class="report-links">
@@ -653,7 +680,7 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S2A-RSI 資料驅動進場指引（161 筆回測）</div>
+      <div class="card-title">📋 S2A-RSI 資料驅動進場指引（450 筆回測，7 年）</div>
       <div class="grid-2" style="gap:12px">
         <div class="cond-card long">
           <h4>✅ 優先進場條件</h4>
@@ -675,7 +702,7 @@ tbody tr:hover td{background:#f8fafc}
         <h4>⚠ 注意事項</h4>
         <ul class="cond-list">
           <li>S2A 大多數進場落在 near_lower（%B &lt; 0.2，WR 38.5%，13 筆）和 lower_mid（%B 0.2–0.4，WR 25%，20 筆）→ BB 位置無法過濾 S2A，策略本身就在低勝率 zone 進場</li>
-          <li>勝率 42.2% 靠獲利因子 1.679 撐起獲利 → 重點是縮短持倉時間，非提高進場頻率</li>
+          <li>勝率 38.2%（7 年）靠獲利因子 1.38、淨盈虧 +$10,450 撐起獲利 → 重點是縮短持倉時間，非提高進場頻率</li>
           <li>亞盤時段（07:00–15:59 UTC+8）表現最弱 → 考慮關閉亞盤進場</li>
           <li>持倉超過 48 bars（24h）→ 強制市價平倉（V2.3 strategy.close() 已實作）</li>
         </ul>
@@ -695,6 +722,7 @@ tbody tr:hover td{background:#f8fafc}
             <tr><td class="td-date">2026-05-01</td><td>BB 分析：大部分進場在 lower zone（WR 25–38%）</td><td>策略邏輯與 BB 位置呈逆勢</td><td>—</td></tr>
             <tr><td class="td-date">2026-05-02</td><td>重命名（S2-Hybrid → S2A-RSI）+ 架構統一</td><td>統一 entry label S2A_LE；加入 EMA 群組；TP 顯示於 label</td><td class="ver-confirmed">V2.2 ✓</td></tr>
             <tr><td class="td-date">2026-05-02</td><td>時間止損修正 + 4H HTF 過濾器</td><td>strategy.close() 保證市價平倉；4H bearish 跳過進場（同 S1 V3.6.2）</td><td class="ver-test">V2.3 🧪</td></tr>
+            <tr><td class="td-date">2026-05-06</td><td>資料升級至 7 年（450 筆）；深度分析 Step 3 更新 time_bleed 特徵</td><td>WR 38.2%（前次 42.2% 為短期偏高）；time_bleed 64.7%（前次 52%）；4H neutral 時最危險（61.5% 虧損為超時）</td><td>—</td></tr>
           </tbody>
         </table>
       </div>
@@ -706,15 +734,15 @@ tbody tr:hover td{background:#f8fafc}
     <div class="part-label"><span class="part-badge">PART 1</span>S2B-Hammer 精華重點</div>
 
     <div class="grid-4">
-      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val yellow">44.0%</div><div class="metric-sub">200 筆交易</div></div>
-      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val green">1.681</div><div class="metric-sub">淨盈虧 +$7,722</div></div>
-      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$1,431</div><div class="metric-sub">三策略中最高</div></div>
-      <div class="metric-card card"><div class="metric-label">time_bleed</div><div class="metric-val red">54%</div><div class="metric-sub">持倉超時的虧損</div></div>
+      <div class="metric-card card"><div class="metric-label">勝率</div><div class="metric-val red">38.9%</div><div class="metric-sub">560 筆（7 年）</div></div>
+      <div class="metric-card card"><div class="metric-label">獲利因子</div><div class="metric-val">1.38</div><div class="metric-sub">淨盈虧 +$12,908</div></div>
+      <div class="metric-card card"><div class="metric-label">最大回撤</div><div class="metric-val red">-$1,880</div><div class="metric-sub">7 年週期</div></div>
+      <div class="metric-card card"><div class="metric-label">time_bleed</div><div class="metric-val red">66%</div><div class="metric-sub">持倉超時的虧損</div></div>
     </div>
 
     <div class="insight-grid">
-      <div class="insight bad"><strong>❌ time_bleed 最嚴重</strong>54% 的虧損是超時持倉 — 三策略中最高<br>平均持倉 135 bars（67.5 小時）<br><strong>→ 加入時間止損是第一優先</strong></div>
-      <div class="insight warn"><strong>⚠ BB 位置分析：near_upper 有陷阱</strong>near_upper（%B 0.8–1.0）：只有 14.3% WR（n=7）— 意外的差<br>lower_mid（%B 0.2–0.4）：50.0% WR（n=10）— 最好<br>→ S2B-Hammer 在趨勢末端進場危險</div>
+      <div class="insight bad"><strong>❌ time_bleed 66%（7 年）</strong>7 年資料確認：65.5% 虧損為超時持倉（前次短期 54%）<br>4H 狀態對 S2B time_bleed 影響極小（三種狀態均 52–54%）<br><strong>→ 4H 過濾無效，需研究時段因素；持倉超 12h 考慮手動平</strong></div>
+      <div class="insight warn"><strong>⚠ 高位槌頭：多單平庸，空單有利</strong>BB%B &gt;= 0.8 時多單 WR 45.7%（n=35，前次 14.3% n=7 為偏差）vs 基準 42.4%<br>關鍵發現：0 false_breakout — 多單失敗不會先反彈再跌，空單入場安全<br>→ S2B 高位訊號優先考慮做空（垂頭陷阱）</div>
       <div class="insight info"><strong>📊 時段差異明顯</strong>亞盤（Asia）勝率 39.5% — 最差<br>美盤（US）勝率 49.3% — 最佳<br>→ 考慮關閉亞盤進場</div>
       <div class="insight good"><strong>✅ DXY 超賣時表現最佳</strong>DXY RSI &lt; 30：66.7% WR<br>DXY RSI 30–50：38.2% WR（最差）<br>→ 與 S2A-RSI 模式相同</div>
     </div>
@@ -726,7 +754,7 @@ tbody tr:hover td{background:#f8fafc}
 
     <div class="part-label" style="margin-top:28px"><span class="part-badge">PART 2</span>實戰備忘錄 · Field Notes</div>
     <div class="card">
-      <div class="card-title">📋 S2B-Hammer 資料驅動進場指引（200 筆回測）</div>
+      <div class="card-title">📋 S2B-Hammer 資料驅動進場指引（560 筆回測，7 年）</div>
       <div class="grid-2" style="gap:12px">
         <div class="cond-card long">
           <h4>✅ 優先進場條件</h4>
@@ -740,7 +768,7 @@ tbody tr:hover td{background:#f8fafc}
         <div class="cond-card short">
           <h4>❌ 禁止進場條件</h4>
           <ul class="cond-list">
-            <li><strong>30m BB %B 0.8–1.0</strong>（near_upper，收盤接近布林帶上軌）→ WR <strong>僅 14.3%</strong>（n=7）— 趨勢末端出現錘頭線是陷阱，非真支撐</li>
+            <li><strong>30m BB %B &gt;= 0.8 時做多</strong>→ WR 45.7%（n=35，7 年）vs 基準 42.4%，僅略優；且 0 false_breakout 確認做空比做多更有利 — 高位錘頭優先考慮空</li>
             <li><strong>4H RSI 看空（bearish）</strong>：4H RSI(14) &lt; 4H RSI-based MA，且 RSI-MA 連續 3 根 4H K 棒斜率向下 → time_bleed 最嚴重，54% 虧損為超時持倉</li>
             <li><strong>Asia session（07:00–15:59 UTC+8）</strong>→ WR 39.5%，三時段最差</li>
           </ul>
@@ -769,6 +797,7 @@ tbody tr:hover td{background:#f8fafc}
             <tr><td class="td-date">2026-05-01</td><td>BB 分析：near_upper WR 只有 14.3%</td><td>趨勢末端進場危險</td><td>—</td></tr>
             <tr><td class="td-date">2026-05-02</td><td>重命名（S2-Pullback → S2B-Hammer）+ 架構統一</td><td>統一 entry label S2B_LE；加入 EMA 群組；架構對齊 S1/S2A</td><td class="ver-confirmed">V2.1 ✓</td></tr>
             <tr><td class="td-date">2026-05-02</td><td>時間止損修正 + 4H HTF 過濾器</td><td>strategy.close() 保證市價平倉；4H bearish 跳過進場（同 S1/S2A 架構）</td><td class="ver-test">V2.2 🧪</td></tr>
+            <tr><td class="td-date">2026-05-06</td><td>資料升級至 7 年（560 筆）；垂頭陷阱深度分析修正</td><td>WR 38.9%（前次 44.0% 為短期偏高）；time_bleed 65.5%；BB&gt;=0.8 多單 WR 修正為 45.7%（n=35，前次 14.3% n=7 偏差）；0 false_breakout 結論不變 → 空單安全性確認</td><td>—</td></tr>
           </tbody>
         </table>
       </div>

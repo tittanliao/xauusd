@@ -2,18 +2,21 @@
 Deep analysis runner: Step 1 (S2B 垂頭陷阱), Step 2 (進場清單), Step 3 (Time-bleed).
 
 Usage:
-    py -3.11 run_deep_analysis.py
+    py -3.11 run_deep_analysis.py               # long dataset (7 years, default)
+    py -3.11 run_deep_analysis.py --mode short  # short dataset (3.5 months)
 
 Output:
     XAUUSD-Deep-Analysis/report.html
 """
+import argparse
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 
 from analysis.config import (
-    STRATEGIES, PRICE_CSV, PRICE_CSV_4H,
+    get_strategies, DATASET_MODES,
+    PRICE_CSV, PRICE_CSV_4H,
     XAUUSD_CSV_1D, DXY_CSV_1D,
 )
 from analysis import loader
@@ -38,6 +41,15 @@ def _load_trades(cfg: dict):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="XAUUSD deep analysis")
+    parser.add_argument(
+        "--mode", choices=["short", "long"], default="long",
+        help="Dataset mode: 'short' (3.5 months) or 'long' (7 years, default)",
+    )
+    args = parser.parse_args()
+
+    strategies = get_strategies(args.mode)
+    print(f"[Dataset: {DATASET_MODES[args.mode]['label']}]")
     print("Loading price / DXY data...")
     data = _load_data()
     for k, v in data.items():
@@ -45,7 +57,7 @@ def main():
             print(f"  [{k}] {len(v)} bars")
 
     # Load all three strategy trade sets
-    s_map = {c["id"]: c for c in STRATEGIES}
+    s_map = {c["id"]: c for c in strategies}
     trades = {sid: _load_trades(cfg) for sid, cfg in s_map.items()}
     for sid, df in trades.items():
         print(f"  [{sid}] {len(df)} trades")

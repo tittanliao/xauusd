@@ -1,34 +1,61 @@
 """
 Central configuration for all XAUUSD strategies.
 
-To add a new strategy: append a dict to STRATEGIES following the same keys.
-The analysis pipeline will automatically pick it up.
+Use get_strategies(mode) to switch between 'short' (3.5 months) and 'long' (7 years).
+STRATEGIES defaults to the long dataset for backward compatibility.
 """
 from pathlib import Path
 
 ROOT    = Path(__file__).parent.parent
 CSV_DIR = ROOT / "csv"
 
-STRATEGIES = [
+# --- Dual-dataset mode definitions ---
+# Why: need to compare short-term performance (2026-01-21~04-27) vs long-term (2019~2026)
+#      to distinguish if a strategy is in a favourable market phase or genuinely robust.
+DATASET_MODES = {
+    "short": {
+        "label": "短期（2026-01-21 ~ 2026-04-27，3.5 個月）",
+        "S1-AweWithBB": "S1-Awe-V3.4_FX_IDC_XAUUSD_2026-04-26.csv",
+        "S2A-RSI":      "S2-Hybrid-V2.0_FX_IDC_XAUUSD_2026-04-26.csv",
+        "S2B-Hammer":   "S2-Pullback-V1.9_FX_IDC_XAUUSD_2026-04-26.csv",
+    },
+    "long": {
+        "label": "長期（2019 ~ 2026-05-06，7 年）",
+        "S1-AweWithBB": "S1-Awe-V3.4_FX_IDC_XAUUSD_2026-05-06.csv",
+        "S2A-RSI":      "S2-Hybrid-V2.0_FX_IDC_XAUUSD_2026-05-06.csv",
+        "S2B-Hammer":   "S2-Pullback-V1.9_FX_IDC_XAUUSD_2026-05-06.csv",
+    },
+}
+
+_STRATEGY_BASE = [
     {
-        "id": "S1-AweWithBB",       # Right-side breakout: BB + AO momentum
+        "id": "S1-AweWithBB",   # Right-side breakout: BB + AO momentum
         "version": "3.4",
         "folder": ROOT / "XAUUSD-Long-S1-AweWithBB",
-        "trades_csv": "S1-Awe-V3.4_FX_IDC_XAUUSD_2026-05-06.csv",
     },
     {
-        "id": "S2A-RSI",            # Left-side reversion: indicator-triggered (RSI crossover / divergence)
+        "id": "S2A-RSI",        # Left-side reversion: indicator-triggered (RSI crossover / divergence)
         "version": "2.0",
         "folder": ROOT / "XAUUSD-Long-S2A-RSI",
-        "trades_csv": "S2-Hybrid-V2.0_FX_IDC_XAUUSD_2026-05-06.csv",
     },
     {
-        "id": "S2B-Hammer",         # Left-side reversion: price-action triggered (hammer candle)
+        "id": "S2B-Hammer",     # Left-side reversion: price-action triggered (hammer candle)
         "version": "1.9",
         "folder": ROOT / "XAUUSD-Long-S2B-Hammer",
-        "trades_csv": "S2-Pullback-V1.9_FX_IDC_XAUUSD_2026-05-06.csv",
     },
 ]
+
+
+def get_strategies(mode: str = "long") -> list[dict]:
+    """Return strategy configs with trade CSVs for the given dataset mode."""
+    if mode not in DATASET_MODES:
+        raise ValueError(f"Unknown mode '{mode}'. Choose from: {list(DATASET_MODES)}")
+    files = DATASET_MODES[mode]
+    return [{**s, "trades_csv": files[s["id"]]} for s in _STRATEGY_BASE]
+
+
+# Default: long dataset (7-year history); kept for backward compatibility
+STRATEGIES = get_strategies("long")
 
 PRICE_CSV     = CSV_DIR / "FX_IDC_XAUUSD, 30.csv"
 PRICE_CSV_60M = CSV_DIR / "FX_IDC_XAUUSD, 60.csv"

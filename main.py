@@ -2,13 +2,16 @@
 Entry point: full fail-pattern analysis for all XAUUSD strategies.
 
 Usage:
-    python3.12 main.py                  # all strategies
-    python3.12 main.py S1-AweWithBB     # single strategy by id
+    py -3.11 main.py                          # all strategies, long dataset (7 years, default)
+    py -3.11 main.py --mode short             # short dataset (3.5 months, 2026-01-21~04-27)
+    py -3.11 main.py S1-AweWithBB             # single strategy, long dataset
+    py -3.11 main.py --mode short S1-AweWithBB
 
 Output per strategy:
     reports/<id>/          PNG charts (reference copies)
     <strategy-folder>/report.html   self-contained HTML report
 """
+import argparse
 import sys
 from pathlib import Path
 
@@ -18,7 +21,8 @@ import matplotlib.pyplot as plt
 matplotlib.use("Agg")
 
 from analysis.config import (
-    STRATEGIES, PRICE_CSV, PRICE_CSV_60M, PRICE_CSV_4H,
+    get_strategies, DATASET_MODES,
+    PRICE_CSV, PRICE_CSV_60M, PRICE_CSV_4H,
     DXY_CSV_1D, DXY_CSV_30, XAUUSD_CSV_1D,
 )
 from analysis import loader, metrics, fail_patterns, pre_entry, charts, report, dxy_analysis, mtf_analysis
@@ -215,13 +219,21 @@ def run_strategy(cfg: dict, data: dict | None = None) -> None:
 
 
 def main() -> None:
-    target_ids = set(sys.argv[1:])
-    strategies = [
-        cfg for cfg in STRATEGIES
-        if not target_ids or cfg["id"] in target_ids
-    ]
+    parser = argparse.ArgumentParser(description="XAUUSD fail-pattern analysis")
+    parser.add_argument(
+        "--mode", choices=["short", "long"], default="long",
+        help="Dataset mode: 'short' (3.5 months 2026-01~04) or 'long' (7 years 2019~2026, default)",
+    )
+    parser.add_argument("strategies", nargs="*", help="Strategy IDs to run (default: all)")
+    args = parser.parse_args()
+
+    all_strats = get_strategies(args.mode)
+    print(f"[Dataset: {DATASET_MODES[args.mode]['label']}]")
+
+    target_ids = set(args.strategies)
+    strategies = [cfg for cfg in all_strats if not target_ids or cfg["id"] in target_ids]
     if not strategies:
-        available = [c["id"] for c in STRATEGIES]
+        available = [c["id"] for c in all_strats]
         print(f"No match. Available: {available}")
         sys.exit(1)
 
@@ -231,7 +243,7 @@ def main() -> None:
         df = data.get(key)
         if df is not None:
             print(f"[{label}] {len(df)} bars  "
-                  f"({df['time'].min().date()} → {df['time'].max().date()})")
+                  f"({df['time'].min().date()} -> {df['time'].max().date()})")
 
     for cfg in strategies:
         try:
