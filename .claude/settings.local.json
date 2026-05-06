@@ -22,7 +22,9 @@
       "Bash(py -3.11 run_deep_analysis.py)",
       "Bash(py -3.11 -c ' *)",
       "Bash(py -3.11 main.py)",
-      "Bash(python -u -c ' *)"
+      "Bash(python -u -c ' *)",
+      "Bash(py -3.11 -c \"from analysis.config import get_strategies, DATASET_MODES, STRATEGIES; print\\('STRATEGIES \\(long\\):', len\\(STRATEGIES\\), 'strats'\\); s=get_strategies\\('short'\\); print\\('short mode:', [x['trades_csv'] for x in s]\\); l=get_strategies\\('long'\\); print\\('long mode:', [x['trades_csv'] for x in l]\\)\")",
+      "Bash(py -3.11 main.py --help)"
     ]
   }
 }
